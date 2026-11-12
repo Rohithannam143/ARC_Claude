@@ -1,40 +1,49 @@
-# ARC AI deployment notes
+# ARC AI deployment
 
-The repository contains the original `arc-secure.zip`. Vercel runs `npm run build`, extracts that archive into `dist/`, and serves it as a static site.
+ARC AI is deployed as a static site on GitHub Pages. The GitHub Actions workflow extracts `arc-secure.zip` into `dist/` and deploys it automatically when `main` changes.
 
-## Vercel build settings
+## GitHub Pages
 
-- Framework preset: Other
+- Repository: `Rohithannam143/ARC_Claude`
+- Site: `https://rohithannam143.github.io/ARC_Claude/`
+- Workflow: `.github/workflows/deploy-pages.yml`
 - Build command: `npm run build`
 - Output directory: `dist`
-- Install command: `npm install`
-- Root directory: repository root
 
-## Public browser configuration (Vercel Environment Variables)
+The build script includes the public Firebase Web App configuration and Supabase project URL/publishable key as defaults. They can be overridden with the existing `FIREBASE_*`, `SUPABASE_URL`, and `SUPABASE_ANON_KEY` build environment variables. These values are browser-facing client configuration; never put a Supabase secret key or service-role key in the frontend.
 
-Set these for Production, Preview, and Development as appropriate:
+## Firebase Authentication
 
-- `FIREBASE_API_KEY`
-- `FIREBASE_AUTH_DOMAIN`
-- `FIREBASE_PROJECT_ID`
-- `FIREBASE_APP_ID`
-- `SUPABASE_URL`
-- `SUPABASE_ANON_KEY`
+The app uses Firebase Email/Password Authentication. In Firebase Console:
 
-These are browser-facing Firebase/Supabase client settings. The Supabase anon key is public by design and must be protected by RLS. Do not use a service-role key here.
+1. Open Authentication → Sign-in method and enable Email/Password.
+2. Open Authentication → Settings → Authorized domains.
+3. Add `rohithannam143.github.io` (hostname only).
+4. Confirm email/password sign-up and email verification are enabled.
 
-## Private Supabase Edge Function secrets
+## Supabase backend
 
-Deploy `arc-function.ts` as `supabase/functions/arc/index.ts` and configure these in Supabase Edge Function secrets, not in GitHub and not in browser variables:
+The Supabase project is `oremmzzhmyhqqftexcor` in `ap-southeast-2`.
 
-- `GROQ_API_KEY`
-- `FIREBASE_PROJECT_ID`
-- `JWT_SECRET`
-- `ALLOWED_ORIGINS` (the exact deployed Vercel origin)
-- `SUPABASE_SERVICE_ROLE_KEY` and `SUPABASE_URL` (provided automatically in Supabase Edge Functions; do not hard-code them)
+- Database tables: `public.notes` and `public.ai_usage`.
+- Storage bucket: private `files` bucket, 20 MB limit.
+- Edge Function: `arc` at `/functions/v1/arc`.
+- Function JWT gateway verification is disabled intentionally; the handler verifies Firebase ID tokens itself.
+- The function reads the Supabase admin secret from the automatically provided `SUPABASE_SECRET_KEYS` environment variable, with legacy service-role fallback. Do not put either value in the browser.
 
-Run `schema.sql` in the Supabase SQL Editor. Follow the setup instructions in the archive's README.
+The database schema is managed through the Supabase migrations already applied to the project. Do not drop tables or rerun the destructive test-data instructions in the source archive.
 
-## Security
+## Required Edge Function secrets
 
-Never commit API-key files, `.env` files, Supabase service-role keys, JWT secrets, or Groq keys. If any private key was committed or exposed, revoke and rotate it immediately.
+Open Supabase Dashboard → Edge Functions → Secrets and add:
+
+- `GROQ_API_KEY`: a newly rotated Groq API key.
+- `JWT_SECRET`: the current Supabase **legacy JWT signing secret** (HS256), not the public JWKS/JWK and not an arbitrary random string.
+
+The function already defaults to Firebase project ID `e-commerce-2a038` and the GitHub Pages origin `https://rohithannam143.github.io`. You can override these with `FIREBASE_PROJECT_ID` and `ALLOWED_ORIGINS` if the deployment changes. `SUPABASE_URL` and `SUPABASE_SECRET_KEYS` are supplied automatically by Supabase.
+
+Important: this implementation creates short-lived HS256 Supabase user tokens from verified Firebase identities. The signing secret must therefore match a Supabase signing key that the project's Data API still trusts. If the legacy JWT secret has been revoked and the project only trusts an asymmetric ES256 key, this HS256 bridge must be migrated to sign with a trusted private key before note access can work. The public JWK is verification-only and cannot sign tokens.
+
+## Credential safety
+
+The earlier API-keys document and chat contained private credentials. Rotate the Groq key and Supabase secret API key before production use. Keep all replacement secrets in Supabase Edge Function Secrets only. Never commit API-key documents, `.env` files, Groq keys, Supabase secret/service-role keys, or JWT signing secrets.
