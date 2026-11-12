@@ -58,3 +58,70 @@
 
 .doodle-head-actions{display:flex;gap:7px;flex-wrap:wrap}
 .rich-editor img{display:block;max-width:100%;height:auto;margin:12px 0;border:1px solid #343a49;border-radius:8px}
+
+
+/* Visual refinement: stronger hierarchy, legibility and calmer surfaces */
+:root{--bg:#0a0c11;--panel:#121620;--panel-2:#171d29;--line:#293142;--muted:#a0a8b8;--text:#f0f2f8;--purple:#a48cff}
+body{color:var(--text);font-size:14px}
+button,input,textarea,select{font:inherit}
+.sidebar{background:#0d1119;border-right-color:#252d3b;padding:26px 17px 18px}
+.brand-row{padding-bottom:30px}
+.brand-name{font-size:25px}
+.nav-caption{font-size:10px;color:#8992a4}
+.nav-item{font-size:13px;padding:11px 12px;color:#a6adbc}
+.nav-item.active{background:linear-gradient(100deg,#292142,#1c1a2b);box-shadow:inset 2px 0 #a48cff}
+.main-area{background:radial-gradient(ellipse at 80% 0%,#15132855,transparent 42%),var(--bg)}
+.topbar{height:72px;background:#0b0e15ed;border-bottom-color:#252d3a;padding:0 46px}
+.breadcrumb{font-size:12px}
+.search-box{height:38px;width:260px;background:#141a25;border-color:#30394b}
+.search-box input{font-size:12px}
+.page-content{max-width:1320px;padding:44px 46px 30px}
+.welcome-row h1{font-size:32px;letter-spacing:-1.25px}
+.welcome-row p{font-size:13px;color:#a0a8b8}
+.eyebrow{font-size:10px}
+.hero-card{min-height:275px;border-radius:18px;padding:36px 42px;box-shadow:0 18px 55px #0002}
+.hero-copy h2{font-size:35px}
+.hero-copy p{font-size:13px;line-height:1.8;color:#c0bdd0}
+.hero-label{font-size:10px}
+.stats-grid{gap:15px;margin:20px 0 35px}
+.stat-card{padding:18px 17px;border-radius:13px;background:linear-gradient(145deg,#151a25,#11151e);border-color:#2b3342}
+.stat-card span,.stat-card small{font-size:10px}
+.stat-card strong{font-size:23px}
+.section-heading{margin-bottom:16px}
+.section-heading h3{font-size:17px}
+.section-heading p{font-size:11px}
+.notes-grid{gap:15px}
+.note-card,.add-note-card{min-height:205px;padding:18px;border-radius:13px;background:linear-gradient(145deg,#151a25,#11151e);border-color:#2b3342}
+.note-subject{font-size:10px}
+.note-card h4{font-size:14px;line-height:1.45}
+.note-card p{font-size:11px;line-height:1.7;color:#a3abba}
+.note-footer{font-size:10px}
+.bottom-grid{gap:15px;margin-top:26px}
+.tip-card,.quick-card{padding:20px;border-radius:13px;background:#131823;border-color:#2b3342}
+.tip-label{font-size:9px}
+.tip-card h4{font-size:14px}
+.tip-card p{font-size:11px;line-height:1.75;color:#a7afbd}
+.quick-card h3{font-size:14px}
+.quick-card button{font-size:11px;padding:10px 0;color:#c0c6d2}
+.footer{font-size:10px}
+.primary-button,.secondary-button{font-size:12px;padding:11px 15px;border-radius:9px}
+.module-page>h1,.module-title-row h1{font-size:32px}
+.module-page>p,.module-title-row p{font-size:13px;line-height:1.7;color:#a3abba}
+.module-tile{padding:22px;border-radius:13px;background:#141923;border-color:#2b3342}
+.module-tile h3{font-size:14px}
+.module-tile p{font-size:11px;line-height:1.75;color:#a3abba}
+.editor-wrap{padding:40px 48px;border-radius:16px;background:#121722;border-color:#30394a}
+.editor-title{font-size:32px}
+.editor-meta{font-size:11px}
+.note-editor{font-size:15px;line-height:1.9}
+.rich-toolbar{background:#111722;border-color:#30394a}
+.archive-browser{padding:22px;border-radius:15px}
+.archive-file{font-size:10px;padding:10px}
+.archive-preview pre{font-size:11px}
+.toast{font-size:12px}
+button{transition:background-color .16s ease,border-color .16s ease,transform .16s ease}
+button:active{transform:translateY(1px)}
+:focus-visible{outline:2px solid #b7a5ff!important;outline-offset:3px}
+@media(max-width:1100px){.page-content{padding:34px 28px 24px}.topbar{padding:0 28px}.hero-copy h2{font-size:30px}}
+@media(max-width:850px){.topbar{padding:0 20px}.page-content{padding:30px 20px 24px}}
+@media(max-width:600px){.topbar{height:62px;padding:0 14px}.page-content{padding:25px 14px 20px}.welcome-row h1{font-size:24px}.hero-card{padding:25px 20px}.hero-copy h2{font-size:28px}.stat-card{padding:13px 10px}.note-card,.add-note-card{min-height:175px}.editor-wrap{padding:22px 17px}.module-page>h1,.module-title-row h1{font-size:26px}}
