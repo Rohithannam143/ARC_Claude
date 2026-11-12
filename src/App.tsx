@@ -8,7 +8,13 @@ import {
   Plus, Search, Settings2, Sparkles, Star, Strikethrough, Trash2, Underline, UploadCloud, X, Pencil, Eraser
 } from "lucide-react";
 
-import { createWorker } from "tesseract.js";\nimport { GlobalWorkerOptions, getDocument } from "pdfjs-dist";\nimport pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";\nimport * as mammoth from "mammoth";\nimport * as XLSX from "xlsx";\n\nGlobalWorkerOptions.workerSrc = pdfWorkerUrl;
+import { createWorker } from "tesseract.js";
+import { GlobalWorkerOptions, getDocument } from "pdfjs-dist";
+import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
+import * as mammoth from "mammoth";
+import * as XLSX from "xlsx";
+
+GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
 
 type ArchiveEntry = { path:string; size:number; kind:string; text:string; supported:boolean };
 type Note = { id:number; title:string; subject:string; updated:string; color:string; excerpt:string; body:string };
@@ -27,7 +33,9 @@ function cleanEditorHTML(input:string){
    walk(child);
    if(!allowed.has(child.tagName)){child.replaceWith(...Array.from(child.childNodes));return;}
    Array.from(child.attributes).forEach(attr=>{
-    if(child.tagName==="IMG"&&attr.name==="src"&&attr.value.startsWith("data:image/png;base64,"))return;\n    if(child.tagName==="INPUT"&&((attr.name==="type"&&attr.value==="checkbox")||attr.name==="checked"))return;\n    if(child.tagName==="UL"&&attr.name==="class"&&attr.value==="task-list")return;
+    if(child.tagName==="IMG"&&attr.name==="src"&&attr.value.startsWith("data:image/png;base64,"))return;
+    if(child.tagName==="INPUT"&&((attr.name==="type"&&attr.value==="checkbox")||attr.name==="checked"))return;
+    if(child.tagName==="UL"&&attr.name==="class"&&attr.value==="task-list")return;
     if(attr.name==="face"||attr.name==="color"||attr.name==="size"){if(child.tagName==="FONT"&&/^(face|color|size)$/.test(attr.name))return;child.removeAttribute(attr.name);return;}
     if(attr.name!=="style"){child.removeAttribute(attr.name);return;}
     const safe=attr.value.split(";").map(rule=>rule.trim()).filter(rule=>/^(color|background-color|font-family|font-size|font-weight|font-style|text-align|text-decoration|border|border-radius|padding|margin|display|width|height)\s*:/i.test(rule)&&!/(url\(|expression|javascript:)/i.test(rule));
@@ -50,7 +58,16 @@ function App(){
  const [drawMode,setDrawMode]=useState<"pen"|"line"|"rectangle"|"circle">("pen");
  const [drawColor,setDrawColor]=useState("#d5d7e0");
  const [drawWidth,setDrawWidth]=useState(3);
- const [recognizing,setRecognizing]=useState(false);\n const [theme,setTheme]=useState<"dark"|"light">(()=>localStorage.getItem("arc-theme")==="light"?"light":"dark");\n const [firebaseKey,setFirebaseKey]=useState(()=>localStorage.getItem("arc-firebase-api-key")||"");\n const [aiMessages,setAiMessages]=useState<{role:"user"|"assistant";content:string}[]>([]);\n const [aiInput,setAiInput]=useState("");\n const [aiBusy,setAiBusy]=useState(false);\n const [aiError,setAiError]=useState("");\n const [aiResult,setAiResult]=useState("");\n const [templateUrl,setTemplateUrl]=useState("");\n const [templateBusy,setTemplateBusy]=useState(false);
+ const [recognizing,setRecognizing]=useState(false);
+ const [theme,setTheme]=useState<"dark"|"light">(()=>localStorage.getItem("arc-theme")==="light"?"light":"dark");
+ const [firebaseKey,setFirebaseKey]=useState(()=>localStorage.getItem("arc-firebase-api-key")||"");
+ const [aiMessages,setAiMessages]=useState<{role:"user"|"assistant";content:string}[]>([]);
+ const [aiInput,setAiInput]=useState("");
+ const [aiBusy,setAiBusy]=useState(false);
+ const [aiError,setAiError]=useState("");
+ const [aiResult,setAiResult]=useState("");
+ const [templateUrl,setTemplateUrl]=useState("");
+ const [templateBusy,setTemplateBusy]=useState(false);
  const [active,setActive]=useState("Overview");
  const [query,setQuery]=useState("");
  const [notes,setNotes]=useState<Note[]>(()=>{try{return JSON.parse(localStorage.getItem("arc-notes")||"null")||starterNotes}catch{return starterNotes}});
@@ -68,7 +85,8 @@ function App(){
  const fileRef=useRef<HTMLInputElement>(null);
  const editorRef=useRef<HTMLDivElement>(null);
  const current=notes.find(n=>n.id===selected)||null;
- useEffect(()=>{localStorage.setItem("arc-notes",JSON.stringify(notes))},[notes]);\n useEffect(()=>{document.documentElement.dataset.theme=theme;localStorage.setItem("arc-theme",theme)},[theme]);
+ useEffect(()=>{localStorage.setItem("arc-notes",JSON.stringify(notes))},[notes]);
+ useEffect(()=>{document.documentElement.dataset.theme=theme;localStorage.setItem("arc-theme",theme)},[theme]);
  useEffect(()=>{if(current){setDraft(current.body);setTitleDraft(current.title);if(editorRef.current)editorRef.current.innerHTML=initialEditorHTML(current.body)}},[selected]);
  const filtered=useMemo(()=>notes.filter(n=>(n.title+n.subject+n.excerpt+n.body).toLowerCase().includes(query.toLowerCase())),[notes,query]);
  function notify(s:string){setToast(s);window.setTimeout(()=>setToast(""),2600)}
