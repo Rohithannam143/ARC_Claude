@@ -176,10 +176,10 @@ function App(){
    const response=await fetch(url);if(!response.ok)throw new Error("The source returned "+response.status);
    const type=response.headers.get("content-type")||"";
    const raw=await response.text();
-   const doc=new DOMParser().parseFromString(raw,type.includes("html")?"text/html":"text/plain");
-   const body=type.includes("html")?(doc.body.innerText||doc.body.textContent||""):raw;
+   const doc=type.includes("html")?new DOMParser().parseFromString(raw,"text/html"):null;
+   const body=doc?(doc.body.innerText||doc.body.textContent||""):raw;
    const clean=body.trim().slice(0,30000);if(!clean)throw new Error("No readable text was found at that URL.");
-   const id=Date.now()+Math.random();const n:Note={id,title:(doc.title||"Imported letter template").slice(0,100),subject:"Imported web template",updated:"Just now",color:"blue",excerpt:clean.slice(0,110),body:clean};
+   const id=Date.now()+Math.random();const n:Note={id,title:((doc?.title)||"Imported letter template").slice(0,100),subject:"Imported web template",updated:"Just now",color:"blue",excerpt:clean.slice(0,110),body:clean};
    setNotes(old=>[n,...old]);setTemplateUrl("");notify("Web template imported");
   }catch(error){notify(error instanceof Error?error.message+" (The website may block browser imports.)":"Could not import this URL");}
   finally{setTemplateBusy(false);}
