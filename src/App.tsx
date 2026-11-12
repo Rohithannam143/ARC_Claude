@@ -14,7 +14,7 @@ import { GlobalWorkerOptions, getDocument } from "pdfjs-dist";
 import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import * as mammoth from "mammoth";
 import * as XLSX from "xlsx";
-import { cloudRequest } from "./cloud";
+import { cloudRequest, uploadUserFile } from "./cloud";
 
 GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
 
@@ -177,6 +177,16 @@ function App(){
   sessionStorage.setItem("arc-firebase-token-expiry",String(Date.now()+Number(data.expiresIn||3600)*1000));
   return data.idToken as string;
  }
+ function firebaseUid(token:string){try{return String(JSON.parse(atob(token.split(".")[1].replace(/-/g,"+").replace(/_/g,"/"))).sub||"")}catch{return ""}}
+ async function persistNoteToCloud(note:Note,filePath?:string){
+  const token=await getFirebaseIdToken();const uid=firebaseUid(token);if(!uid)throw new Error("Could not identify the signed-in cloud user.");
+  const path=filePath||("note:"+note.id);
+  const existing=await cloudRequest<any[]>(token,"notes?select=id,file_path&file_path=eq."+encodeURIComponent(path));
+  const payload={title:note.title.slice(0,200),subject:note.subject.slice(0,100),content:note.body,file_path:path,updated_at:new Date().toISOString()};
+  if(existing.length)await cloudRequest(token,"notes?id=eq."+encodeURIComponent(existing[0].id),{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify(payload)});
+  else await cloudRequest(token,"notes",{method:"POST",headers:{"Prefer":"return=minimal"},body:JSON.stringify(payload)});
+  return {token,uid};
+ }
  async function syncNotesToCloud(){
   try{
    const firebaseToken=await getFirebaseIdToken();
@@ -315,7 +325,7 @@ function App(){
   drawPage(1);let y=43;for(const line of lines){if(y>280){pdf.addPage();drawPage(pdf.getNumberOfPages());y=43;}pdf.text(String(line),16,y);y+=8;}
   pdf.save((title||"ARC-Note").replace(/[^a-z0-9-_ ]/gi,"").trim()+".pdf");notify("PDF downloaded");
  }
- function saveNote(){if(!current)return;syncEditor();const body=editorRef.current?cleanEditorHTML(editorRef.current.innerHTML):draft;const title=titleDraft.trim()||"Untitled note";setNotes(old=>old.map(n=>n.id===current.id?{...n,title,body,excerpt:body.replace(/[#*\\n]/g," ").slice(0,110),updated:"Just now"}:n));notify("Note saved on this device")}
+ async function saveNote(){if(!current)return;syncEditor();const body=editorRef.current?cleanEditorHTML(editorRef.current.innerHTML):draft;const title=titleDraft.trim()||"Untitled note";const updated={...current,title,body,excerpt:body.replace(/[#*\\n]/g," ").slice(0,110),updated:"Just now"};setNotes(old=>old.map(n=>n.id===current.id?updated:n));try{await persistNoteToCloud(updated);notify("Note saved on this device and Supabase")}catch(error){notify("Saved locally; Supabase sync failed: "+(error instanceof Error?error.message:"connection error"))}}
  function createNote(){const id=Date.now();const n:Note={id,title:"Untitled note",subject:"Unsorted",updated:"Just now",color:"violet",excerpt:"Start writing your ideas…",body:""};setNotes(old=>[n,...old]);setSelected(id);setActive("Editor")}
  async function extractDocumentText(file:File):Promise<{text:string;kind:string;extractable:boolean}>{
   const ext=file.name.split(".").pop()?.toLowerCase()||"";
@@ -373,8 +383,12 @@ function App(){
     const result=await extractDocumentText(file);
     if(!result.extractable){notify(file.name+": content extraction is not supported yet; file was not added.");continue;}
     const id=Date.now()+Math.random();
-    setNotes(old=>[{id,title:file.name.replace(/\.[^.]+$/,""),subject:"Imported · "+result.kind,updated:"Just now",color:"blue",excerpt:(result.text||"No text extracted").slice(0,110),body:result.text},...old]);
-    notify("Imported "+file.name);
+    const note:Note={id,title:file.name.replace(/\.[^.]+$/,""),subject:"Imported · "+result.kind,updated:"Just now",color:"blue",excerpt:(result.text||"No text extracted").slice(0,110),body:result.text};
+    const {token,uid}=await persistNoteToCloud(note);
+    const storagePath=await uploadUserFile(token,file,uid);
+    await persistNoteToCloud(note,storagePath);
+    setNotes(old=>[note,...old]);
+    notify("Imported and backed up "+file.name+" to Supabase");
    }catch(error){notify(file.name+": "+(error instanceof Error?error.message:"could not be read"))}
   }
   e.target.value="";
