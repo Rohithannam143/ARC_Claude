@@ -538,3 +538,6 @@ html[data-theme="light"] .toast{background:#202638!important;color:#fff!importan
 .ruler-indent{position:absolute;top:0;width:0;height:0;border-left:5px solid transparent;border-right:5px solid transparent;border-top:9px solid #9b83ff;transform:translateX(-50%)}
 .ruler-indent.right{right:8%;left:auto;border-top:0;border-bottom:9px solid #9b83ff;transform:none}
 .rich-toolbar button.active-tool{background:#514274;color:#fff}
+
+.editor-ruler .ruler-margin-control{position:absolute;left:8%;right:8%;bottom:-7px;width:84%;height:8px;opacity:0;cursor:ew-resize}
+.editor-ruler:focus-within .ruler-margin-control{opacity:.9}
