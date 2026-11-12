@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
 import JSZip from "jszip";
 import {
-  Activity, AlignCenter, AlignLeft, AlignRight, ArrowLeft, ArrowRight, Bold, Bell, BookOpen, BrainCircuit, Check,
+  Activity, AlignCenter, AlignLeft, AlignRight, ArrowLeft, ArrowRight, Bold, Bell, BookOpen, BrainCircuit, Check, CheckSquare, ClipboardList, ExternalLink, FileSpreadsheet, FileImage, FileAudio, FileVideo, Moon, Sun, Send,
   ChevronDown, Download, FilePlus2, FileText, FolderOpen, GraduationCap,
   Highlighter, Italic, LayoutDashboard, Lightbulb, List, ListOrdered, Menu, MessageSquareText, MoreHorizontal,
   Plus, Search, Settings2, Sparkles, Star, Strikethrough, Trash2, Underline, UploadCloud, X, Pencil, Eraser
@@ -17,17 +17,17 @@ const starterNotes:Note[]=[
  {id:2,title:"Compiler Design — Lexical Analysis",subject:"Compiler Design",updated:"Yesterday",color:"blue",excerpt:"Tokens, patterns, lexemes and the role of a lexical analyser.",body:"# Lexical Analysis\n\nA lexical analyser is the first phase of a compiler. It reads source code and groups characters into tokens.\n\n## Important terms\n- Token: a category such as identifier or keyword\n- Lexeme: the actual character sequence\n- Pattern: the rule describing a token"},
  {id:3,title:"Cloud Computing Fundamentals",subject:"Cloud Computing",updated:"Nov 10",color:"orange",excerpt:"Service models, deployment models, virtualization and cloud architecture.",body:"# Cloud Computing Fundamentals\n\nCloud computing provides on-demand access to computing resources over a network.\n\n## Service models\n- IaaS\n- PaaS\n- SaaS"}
 ];
-const navItems=[{label:"Overview",icon:LayoutDashboard},{label:"My Notes",icon:FileText},{label:"Library",icon:FolderOpen},{label:"AI Study Room",icon:BrainCircuit},{label:"Flashcards",icon:GraduationCap}];
+const navItems=[{label:"Overview",icon:LayoutDashboard},{label:"My Notes",icon:FileText},{label:"Library",icon:FolderOpen},{label:"Letter Templates",icon:ClipboardList},{label:"AI Study Room",icon:BrainCircuit},{label:"Flashcards",icon:GraduationCap}];
 
 function cleanEditorHTML(input:string){
  const doc=new DOMParser().parseFromString(input,"text/html");
- const allowed=new Set(["P","DIV","BR","STRONG","B","EM","I","U","S","STRIKE","H1","H2","H3","H4","UL","OL","LI","BLOCKQUOTE","SPAN","FONT","IMG","HR"]);
+ const allowed=new Set(["P","DIV","BR","STRONG","B","EM","I","U","S","STRIKE","H1","H2","H3","H4","UL","OL","LI","BLOCKQUOTE","SPAN","FONT","IMG","HR","INPUT"]);
  const walk=(node:Element)=>{
   Array.from(node.children).forEach(child=>{
    walk(child);
    if(!allowed.has(child.tagName)){child.replaceWith(...Array.from(child.childNodes));return;}
    Array.from(child.attributes).forEach(attr=>{
-    if(child.tagName==="IMG"&&attr.name==="src"&&attr.value.startsWith("data:image/png;base64,"))return;
+    if(child.tagName==="IMG"&&attr.name==="src"&&attr.value.startsWith("data:image/png;base64,"))return;\n    if(child.tagName==="INPUT"&&((attr.name==="type"&&attr.value==="checkbox")||attr.name==="checked"))return;\n    if(child.tagName==="UL"&&attr.name==="class"&&attr.value==="task-list")return;
     if(attr.name==="face"||attr.name==="color"||attr.name==="size"){if(child.tagName==="FONT"&&/^(face|color|size)$/.test(attr.name))return;child.removeAttribute(attr.name);return;}
     if(attr.name!=="style"){child.removeAttribute(attr.name);return;}
     const safe=attr.value.split(";").map(rule=>rule.trim()).filter(rule=>/^(color|background-color|font-family|font-size|font-weight|font-style|text-align|text-decoration|border|border-radius|padding|margin|display|width|height)\s*:/i.test(rule)&&!/(url\(|expression|javascript:)/i.test(rule));
@@ -50,7 +50,7 @@ function App(){
  const [drawMode,setDrawMode]=useState<"pen"|"line"|"rectangle"|"circle">("pen");
  const [drawColor,setDrawColor]=useState("#d5d7e0");
  const [drawWidth,setDrawWidth]=useState(3);
- const [recognizing,setRecognizing]=useState(false);
+ const [recognizing,setRecognizing]=useState(false);\n const [theme,setTheme]=useState<"dark"|"light">(()=>localStorage.getItem("arc-theme")==="light"?"light":"dark");\n const [firebaseKey,setFirebaseKey]=useState(()=>localStorage.getItem("arc-firebase-api-key")||"");\n const [aiMessages,setAiMessages]=useState<{role:"user"|"assistant";content:string}[]>([]);\n const [aiInput,setAiInput]=useState("");\n const [aiBusy,setAiBusy]=useState(false);\n const [aiError,setAiError]=useState("");\n const [aiResult,setAiResult]=useState("");\n const [templateUrl,setTemplateUrl]=useState("");\n const [templateBusy,setTemplateBusy]=useState(false);
  const [active,setActive]=useState("Overview");
  const [query,setQuery]=useState("");
  const [notes,setNotes]=useState<Note[]>(()=>{try{return JSON.parse(localStorage.getItem("arc-notes")||"null")||starterNotes}catch{return starterNotes}});
@@ -68,7 +68,7 @@ function App(){
  const fileRef=useRef<HTMLInputElement>(null);
  const editorRef=useRef<HTMLDivElement>(null);
  const current=notes.find(n=>n.id===selected)||null;
- useEffect(()=>{localStorage.setItem("arc-notes",JSON.stringify(notes))},[notes]);
+ useEffect(()=>{localStorage.setItem("arc-notes",JSON.stringify(notes))},[notes]);\n useEffect(()=>{document.documentElement.dataset.theme=theme;localStorage.setItem("arc-theme",theme)},[theme]);
  useEffect(()=>{if(current){setDraft(current.body);setTitleDraft(current.title);if(editorRef.current)editorRef.current.innerHTML=initialEditorHTML(current.body)}},[selected]);
  const filtered=useMemo(()=>notes.filter(n=>(n.title+n.subject+n.excerpt+n.body).toLowerCase().includes(query.toLowerCase())),[notes,query]);
  function notify(s:string){setToast(s);window.setTimeout(()=>setToast(""),2600)}
@@ -100,6 +100,72 @@ function App(){
  }
  function clearDrawing(){const c=drawCanvasRef.current;if(c){const ctx=c.getContext("2d");if(ctx)ctx.clearRect(0,0,c.width,c.height);}}
  async function recognizeDrawingText(){const canvas=drawCanvasRef.current;if(!canvas)return;setRecognizing(true);try{const worker=await createWorker("eng");const result=await worker.recognize(canvas);await worker.terminate();const text=result.data.text.trim();if(!text){notify("No readable text detected. Try clearer handwriting.");return;}if(editorRef.current){editorRef.current.focus();document.execCommand("insertText",false,"\n"+text+"\n");syncEditor();}notify("Handwriting converted to editable text");}catch{notify("Text recognition failed. Check your connection and try again.");}finally{setRecognizing(false);}}
+
+ async function getFirebaseIdToken(){
+  if(!firebaseKey.trim())throw new Error("Add your Firebase Web API key in Settings first.");
+  const cached=sessionStorage.getItem("arc-firebase-id-token");
+  const cachedUntil=Number(sessionStorage.getItem("arc-firebase-token-expiry")||0);
+  if(cached&&cachedUntil>Date.now()+60000)return cached;
+  const response=await fetch("https://identitytoolkit.googleapis.com/v1/accounts:signUp?key="+encodeURIComponent(firebaseKey.trim()),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({returnSecureToken:true})});
+  const data=await response.json();
+  if(!response.ok)throw new Error(data.error?.message==="OPERATION_NOT_ALLOWED"?"Enable Anonymous sign-in in Firebase Authentication.":data.error?.message||"Firebase sign-in failed.");
+  sessionStorage.setItem("arc-firebase-id-token",data.idToken);
+  sessionStorage.setItem("arc-firebase-token-expiry",String(Date.now()+Number(data.expiresIn||3600)*1000));
+  return data.idToken as string;
+ }
+ async function callArcAI(mode:"chat"|"summary"|"cards"|"kit",messages:{role:"user"|"assistant";content:string}[]=[]){
+  setAiBusy(true);setAiError("");setAiResult("");
+  try{
+   const idToken=await getFirebaseIdToken();
+   const context=notes.map(n=>"TITLE: "+n.title+"\nSUBJECT: "+n.subject+"\n"+n.body.replace(/<[^>]*>/g," ")).join("\n\n").slice(0,14000);
+   const response=await fetch("https://oremmzzhmyhqqftexcor.supabase.co/functions/v1/arc",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+idToken},body:JSON.stringify({action:"ai",mode,context,messages})});
+   const data=await response.json();
+   if(!response.ok)throw new Error(data.error||"AI request failed ("+response.status+").");
+   const result=String(data.text||"").trim();
+   if(!result)throw new Error("The AI returned an empty response. Please try again.");
+   setAiResult(result);
+   if(mode==="chat")setAiMessages(old=>[...old,{role:"assistant",content:result}]);
+   return result;
+  }catch(error){const message=error instanceof Error?error.message:"AI connection failed.";setAiError(message);return "";}
+  finally{setAiBusy(false);}
+ }
+ async function sendAIMessage(){
+  const prompt=aiInput.trim();if(!prompt||aiBusy)return;
+  const next=[...aiMessages,{role:"user" as const,content:prompt}];setAiMessages(next);setAiInput("");
+  await callArcAI("chat",next);
+ }
+ function addChecklist(){
+  editorRef.current?.focus();
+  document.execCommand("insertHTML",false,'<ul class="task-list"><li><input type="checkbox"> <span>Task to complete</span></li><li><input type="checkbox"> <span>Another task</span></li></ul><p><br></p>');
+  syncEditor();
+ }
+ const letterTemplates=[
+  {title:"Formal business letter",category:"Business",body:"[Your name]\n[Your address]\n[City, PIN]\n[Email] · [Phone]\n\n[Date]\n\n[Recipient name]\n[Designation]\n[Organization]\n[Address]\n\nSubject: [Clear subject]\n\nDear [Recipient name],\n\nI am writing to [state your purpose clearly]. [Provide the key details, context and any relevant dates.]\n\nI would appreciate your consideration of this request. Please let me know if you need any further information.\n\nYours sincerely,\n[Your name]"},
+  {title:"Job application cover letter",category:"Career",body:"[Your name] · [Phone] · [Email] · [LinkedIn]\n[Date]\n\nHiring Manager\n[Company name]\n\nSubject: Application for [Job title]\n\nDear Hiring Manager,\n\nI am applying for the [Job title] position at [Company]. My experience with [relevant skills] and work on [relevant project] have prepared me to contribute to your team.\n\nIn [project or internship], I [specific achievement with evidence]. I am particularly interested in [specific reason related to the company or role].\n\nThank you for considering my application. I would welcome the opportunity to discuss my fit for this role.\n\nSincerely,\n[Your name]"},
+  {title:"Resignation letter",category:"Career",body:"[Your name]\n[Date]\n\n[Manager name]\n[Company]\n\nSubject: Formal resignation\n\nDear [Manager name],\n\nPlease accept this letter as formal notice of my resignation from my position as [Role] at [Company], effective [Last working day].\n\nThank you for the opportunities and support during my time here. I will do my best to ensure a smooth handover of my responsibilities.\n\nSincerely,\n[Your name]"},
+  {title:"Leave request",category:"Work / Education",body:"[Your name]\n[Date]\n\nTo: [Manager / Faculty name]\nSubject: Request for leave from [Start date] to [End date]\n\nDear [Name],\n\nI request leave for [number] day(s), from [start date] through [end date], due to [brief reason]. I will complete or hand over any pending responsibilities before my leave.\n\nKindly approve my request.\n\nRegards,\n[Your name]"},
+  {title:"Recommendation letter",category:"Education / Career",body:"[Date]\n\nTo Whom It May Concern,\n\nI am pleased to recommend [Candidate name] for [role / program]. I have known [Candidate] in my capacity as [relationship] for [duration].\n\nDuring this time, [Candidate] demonstrated [specific strengths], particularly through [specific example]. I believe these qualities make [Candidate] a strong fit for [opportunity].\n\nPlease contact me if further information is required.\n\nSincerely,\n[Recommender name]\n[Title / Organization]"},
+  {title:"Complaint / service request",category:"Customer service",body:"[Your name and contact details]\n[Date]\n\nTo: [Company / Department]\n\nSubject: Complaint regarding [product / service / reference number]\n\nDear Customer Support Team,\n\nI am writing to report an issue with [brief description]. The issue occurred on [date] and the relevant reference is [order / ticket number].\n\nI request [specific resolution]. Please confirm the next steps and expected timeline. I have included [supporting documents] for reference.\n\nRegards,\n[Your name]"}
+ ];
+ function useLetterTemplate(template:{title:string;category:string;body:string}){
+  const id=Date.now()+Math.random();const n:Note={id,title:template.title,subject:"Letter template · "+template.category,updated:"Just now",color:"violet",excerpt:"Editable letter template — replace the bracketed placeholders.",body:template.body.replace(/\n/g,"<br>")};
+  setNotes(old=>[n,...old]);setSelected(id);setActive("Editor");notify("Template added to My Notes");
+ }
+ async function importTemplateFromUrl(){
+  const url=templateUrl.trim();if(!/^https?:\/\//i.test(url)){notify("Enter a valid public http or https URL");return}
+  setTemplateBusy(true);
+  try{
+   const response=await fetch(url);if(!response.ok)throw new Error("The source returned "+response.status);
+   const type=response.headers.get("content-type")||"";
+   const raw=await response.text();
+   const doc=new DOMParser().parseFromString(raw,type.includes("html")?"text/html":"text/plain");
+   const body=type.includes("html")?(doc.body.innerText||doc.body.textContent||""):raw;
+   const clean=body.trim().slice(0,30000);if(!clean)throw new Error("No readable text was found at that URL.");
+   const id=Date.now()+Math.random();const n:Note={id,title:(doc.title||"Imported letter template").slice(0,100),subject:"Imported web template",updated:"Just now",color:"blue",excerpt:clean.slice(0,110),body:clean};
+   setNotes(old=>[n,...old]);setTemplateUrl("");notify("Web template imported");
+  }catch(error){notify(error instanceof Error?error.message+" (The website may block browser imports.)":"Could not import this URL");}
+  finally{setTemplateBusy(false);}
+ }
 
  function syncEditor(){if(editorRef.current)setDraft(cleanEditorHTML(editorRef.current.innerHTML));}
  function format(command:string,value?:string){editorRef.current?.focus();document.execCommand(command,false,value);syncEditor();}
