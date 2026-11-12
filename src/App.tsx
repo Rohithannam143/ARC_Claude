@@ -25,7 +25,8 @@ function cleanEditorHTML(input:string){
    walk(child);
    if(!allowed.has(child.tagName)){child.replaceWith(...Array.from(child.childNodes));return;}
    Array.from(child.attributes).forEach(attr=>{
-    if(attr.name==="face"||attr.name==="color"||attr.name==="size"){if(child.tagName==="FONT"&&/^(face|color|size)$/.test(attr.name))return;child.removeAttribute(attr.name);return;}\n    if(attr.name!=="style"){child.removeAttribute(attr.name);return;}
+    if(attr.name==="face"||attr.name==="color"||attr.name==="size"){if(child.tagName==="FONT"&&/^(face|color|size)$/.test(attr.name))return;child.removeAttribute(attr.name);return;}
+    if(attr.name!=="style"){child.removeAttribute(attr.name);return;}
     const safe=attr.value.split(";").map(rule=>rule.trim()).filter(rule=>/^(color|background-color|font-family|font-size|font-weight|font-style|text-align|text-decoration|border|border-radius|padding|margin|display|width|height)\s*:/i.test(rule)&&!/(url\(|expression|javascript:)/i.test(rule));
     if(safe.length)child.setAttribute("style",safe.join(";"));else child.removeAttribute("style");
    });
