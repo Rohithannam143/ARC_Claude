@@ -55,7 +55,6 @@ function initialEditorHTML(value:string){
 function App(){
  const drawCanvasRef=useRef<HTMLCanvasElement>(null);
  const drawPointsRef=useRef<{x:number;y:number}[]>([]);
- const [drawing,setDrawing]=useState(false);
  const drawingRef=useRef(false);
  const [showRuler,setShowRuler]=useState(true);
  const [rulerIndent,setRulerIndent]=useState(24);
@@ -118,7 +117,7 @@ function App(){
  function pointerPoint(e:React.PointerEvent<HTMLCanvasElement>){const r=e.currentTarget.getBoundingClientRect();return{x:(e.clientX-r.left)*e.currentTarget.width/r.width,y:(e.clientY-r.top)*e.currentTarget.height/r.height};}
  function startDrawing(e:React.PointerEvent<HTMLCanvasElement>){
   if(e.button!==0)return;e.preventDefault();e.currentTarget.setPointerCapture(e.pointerId);
-  const p=pointerPoint(e);drawPointsRef.current=[p];drawingRef.current=true;setDrawing(true);
+  const p=pointerPoint(e);drawPointsRef.current=[p];drawingRef.current=true;
   const ctx=e.currentTarget.getContext("2d");ctx?.clearRect(0,0,e.currentTarget.width,e.currentTarget.height);drawCanvasStroke([p],drawMode,drawColor,drawWidth);
  }
  function moveDrawing(e:React.PointerEvent<HTMLCanvasElement>){
@@ -127,7 +126,7 @@ function App(){
   ctx.clearRect(0,0,canvas.width,canvas.height);drawCanvasStroke(drawPointsRef.current,drawMode,drawColor,drawWidth);
  }
  function finishDrawing(e?:React.PointerEvent<HTMLCanvasElement>){
-  if(!drawingRef.current)return;drawingRef.current=false;setDrawing(false);
+  if(!drawingRef.current)return;drawingRef.current=false;
   if(e&&e.currentTarget.hasPointerCapture(e.pointerId))e.currentTarget.releasePointerCapture(e.pointerId);
   const pts=drawPointsRef.current;if(!pts.length)return;
   const first=pts[0],last=pts[pts.length-1],distance=Math.hypot(last.x-first.x,last.y-first.y);
