@@ -180,7 +180,7 @@ function App(){
  function firebaseUid(token:string){try{return String(JSON.parse(atob(token.split(".")[1].replace(/-/g,"+").replace(/_/g,"/"))).sub||"")}catch{return ""}}
  async function persistNoteToCloud(note:Note,filePath?:string){
   const token=await getFirebaseIdToken();const uid=firebaseUid(token);if(!uid)throw new Error("Could not identify the signed-in cloud user.");
-  const path=filePath||note.filePath||("note:"+note.id);
+  const path=filePath||note.filePath||(uid+"/notes/"+note.id);
   const existing=await cloudRequest<any[]>(token,"notes?select=id,file_path&file_path=eq."+encodeURIComponent(path));
   const payload={title:note.title.slice(0,200),subject:note.subject.slice(0,100),content:note.body,file_path:path,updated_at:new Date().toISOString()};
   if(existing.length)await cloudRequest(token,"notes?id=eq."+encodeURIComponent(existing[0].id),{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify(payload)});
@@ -192,7 +192,7 @@ function App(){
    const firebaseToken=await getFirebaseIdToken();
    const existing=await cloudRequest<any[]>(firebaseToken,"notes?select=id,title,subject,content,file_path,updated_at");
    for(const note of notes){
-    const filePath=note.filePath||("note:"+note.id);
+    const filePath=note.filePath||(firebaseUid(firebaseToken)+"/notes/"+note.id);
     const payload={title:note.title,subject:note.subject,content:note.body,file_path:filePath,updated_at:new Date().toISOString()};
     const row=existing.find(item=>item.file_path===filePath);
     if(row){
