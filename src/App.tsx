@@ -84,7 +84,7 @@ function App(){
  const [knownCards,setKnownCards]=useState<Record<string,boolean>>({});
  const [selectedSummary,setSelectedSummary]=useState("");
  const [noteKnowledge,setNoteKnowledge]=useState<{id:number;title:string;subject:string;content:string}[]>([]);
- const [knowledgeUpdated,setKnowledgeUpdated]=useState(0);
+
  const [visualization,setVisualization]=useState("");
  const [visualBusy,setVisualBusy]=useState(false);
  const [visualError,setVisualError]=useState("");
