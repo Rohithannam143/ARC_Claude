@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import type { ChangeEvent } from "react";
 import JSZip from "jszip";
+import { createWorker } from "tesseract.js";
 import {
   Activity, AlignCenter, AlignLeft, AlignRight, ArrowLeft, ArrowRight, Bold, Bell, BookOpen, BrainCircuit, Check, CheckSquare, ClipboardList, ExternalLink, Moon, Sun, Send,
   ChevronDown, Download, FilePlus2, FileText, FolderOpen, GraduationCap,
