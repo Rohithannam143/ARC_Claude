@@ -438,3 +438,36 @@ html[data-theme="light"] .toast{background:#202638!important;color:#fff!importan
   .note-card, .add-note-card { min-height: 145px; }
   .bottom-grid { margin-top: 14px; }
 }
+
+
+/* Sidebar viewport containment: scroll the navigation inside its own panel */
+.sidebar {
+  height: 100vh;
+  height: 100dvh;
+  min-height: 0;
+  overflow-x: hidden;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  scrollbar-width: thin;
+  scrollbar-color: #55506b transparent;
+}
+.sidebar > * { flex-shrink: 0; }
+.sidebar .sidebar-bottom {
+  margin-top: auto;
+  padding-top: 18px;
+  flex-shrink: 0;
+}
+.sidebar::-webkit-scrollbar { width: 5px; }
+.sidebar::-webkit-scrollbar-track { background: transparent; }
+.sidebar::-webkit-scrollbar-thumb { background: #55506b88; border-radius: 8px; }
+@media (max-height: 760px) {
+  .sidebar { padding-top: 14px; padding-bottom: 10px; }
+  .brand-row { padding-bottom: 14px; }
+  .new-note-button { margin-top: 9px; margin-bottom: 14px; }
+  .collections-caption { margin-top: 14px; }
+  .nav-item { padding-top: 8px; padding-bottom: 8px; }
+  .collection-item { padding-top: 7px; padding-bottom: 7px; }
+  .sidebar .sidebar-bottom { padding-top: 12px; }
+  .storage-card { padding: 9px 10px; margin-bottom: 8px; }
+  .profile-row { padding-top: 9px; margin-top: 7px; }
+}
