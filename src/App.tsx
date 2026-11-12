@@ -233,7 +233,7 @@ function App(){
   {title:"Complaint / service request",category:"Customer service",body:"[Your name and contact details]\n[Date]\n\nTo: [Company / Department]\n\nSubject: Complaint regarding [product / service / reference number]\n\nDear Customer Support Team,\n\nI am writing to report an issue with [brief description]. The issue occurred on [date] and the relevant reference is [order / ticket number].\n\nI request [specific resolution]. Please confirm the next steps and expected timeline. I have included [supporting documents] for reference.\n\nRegards,\n[Your name]"}
  ];
  function useLetterTemplate(template:{title:string;category:string;body:string;theme?:string}){
-  const id=Date.now()+Math.random();const n:Note={id,title:template.title,subject:"Letter template · "+template.category,updated:"Just now",color:"violet",excerpt:"Editable letter template — replace the bracketed placeholders.",body:template.body.replace(/\n/g,"<br>")};
+  const id=Date.now()+Math.random();const n:Note={id,title:template.title,subject:"Letter template · "+template.category,updated:"Just now",color:"violet",excerpt:"Editable letter template — replace the bracketed placeholders.",body:template.body.replace(/\\n/g,"<br>").replace(/\n/g,"<br>")};
   setNotes(old=>[n,...old]);setSelected(id);setActive("Editor");notify("Template added to My Notes");
  }
  async function importTemplateFromUrl(){
