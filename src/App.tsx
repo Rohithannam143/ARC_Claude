@@ -67,14 +67,14 @@ function App(){
     if(path.startsWith("__MACOSX/")||path.split("/").some(p=>p==="."||p===".."))continue;
     const ext=path.split(".").pop()?.toLowerCase()||"";
     const supported=["txt","md","markdown","csv","json","html","htm","xml","log","docx"].includes(ext);
-    const size=(zip.file(path)?._data as {uncompressedSize?:number}|undefined)?.uncompressedSize||0;
+    const size=(item as unknown as { _data?: { uncompressedSize?: number } })._data?.uncompressedSize||0;
     let body="";
     if(supported){
      if(size>8*1024*1024){body="[Skipped: file exceeds 8 MB text extraction limit]"}
      else if(ext==="docx"){
       const doc=await JSZip.loadAsync(await item.async("uint8array"));
       const xml=await doc.file("word/document.xml")?.async("text");
-      body=xml?xml.replace(/<w:tab\/>/g,"\t").replace(/<w:br\/>/g,"\n").replace(/<\\/w:p>/g,"\n").replace(/<[^>]+>/g," ").replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/\\s+/g," ").trim():"Could not find document text in this DOCX.";
+       body=xml?xml.replace(/<w:tab\/>/g,"\t").replace(/<w:br\/>/g,"\n").replace(/<\/w:p>/g,"\n").replace(/<[^>]+>/g," ").replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">").replace(/&quot;/g,'"').replace(/&#39;/g,"'").replace(/\s+/g," ").trim():"Could not find document text in this DOCX.";
      }else body=await item.async("text");
     }
     entries.push({path,size,kind:ext.toUpperCase()||"FILE",text:body,supported});
