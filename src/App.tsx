@@ -19,7 +19,7 @@ import { cloudRequest, uploadUserFile } from "./cloud";
 GlobalWorkerOptions.workerSrc = pdfWorkerUrl;
 
 type ArchiveEntry = { path:string; size:number; kind:string; text:string; supported:boolean };
-type Note = { id:number; title:string; subject:string; updated:string; color:string; excerpt:string; body:string };
+type Note = { id:number; title:string; subject:string; updated:string; color:string; excerpt:string; body:string; filePath?:string };
 const starterNotes:Note[]=[
  {id:1,title:"Introduction to Artificial Intelligence",subject:"Artificial Intelligence",updated:"Today",color:"violet",excerpt:"Core concepts, intelligent agents, problem-solving and search strategies.",body:"# Introduction to Artificial Intelligence\n\nArtificial Intelligence (AI) is the field of building systems that can perform tasks that normally require human intelligence.\n\n## Key topics\n- Intelligent agents\n- Problem-solving agents\n- Search strategies\n- Heuristic functions\n\nAdd your own class notes here."},
  {id:2,title:"Compiler Design — Lexical Analysis",subject:"Compiler Design",updated:"Yesterday",color:"blue",excerpt:"Tokens, patterns, lexemes and the role of a lexical analyser.",body:"# Lexical Analysis\n\nA lexical analyser is the first phase of a compiler. It reads source code and groups characters into tokens.\n\n## Important terms\n- Token: a category such as identifier or keyword\n- Lexeme: the actual character sequence\n- Pattern: the rule describing a token"},
@@ -180,7 +180,7 @@ function App(){
  function firebaseUid(token:string){try{return String(JSON.parse(atob(token.split(".")[1].replace(/-/g,"+").replace(/_/g,"/"))).sub||"")}catch{return ""}}
  async function persistNoteToCloud(note:Note,filePath?:string){
   const token=await getFirebaseIdToken();const uid=firebaseUid(token);if(!uid)throw new Error("Could not identify the signed-in cloud user.");
-  const path=filePath||("note:"+note.id);
+  const path=filePath||note.filePath||("note:"+note.id);
   const existing=await cloudRequest<any[]>(token,"notes?select=id,file_path&file_path=eq."+encodeURIComponent(path));
   const payload={title:note.title.slice(0,200),subject:note.subject.slice(0,100),content:note.body,file_path:path,updated_at:new Date().toISOString()};
   if(existing.length)await cloudRequest(token,"notes?id=eq."+encodeURIComponent(existing[0].id),{method:"PATCH",headers:{"Prefer":"return=minimal"},body:JSON.stringify(payload)});
@@ -381,14 +381,13 @@ function App(){
   for(const file of files){
    try{
     const result=await extractDocumentText(file);
-    if(!result.extractable){notify(file.name+": content extraction is not supported yet; file was not added.");continue;}
     const id=Date.now()+Math.random();
-    const note:Note={id,title:file.name.replace(/\.[^.]+$/,""),subject:"Imported · "+result.kind,updated:"Just now",color:"blue",excerpt:(result.text||"No text extracted").slice(0,110),body:result.text};
     const token=await getFirebaseIdToken();const uid=firebaseUid(token);if(!uid)throw new Error("Could not identify cloud user.");
     const storagePath=await uploadUserFile(token,file,uid);
-    await persistNoteToCloud(note,storagePath);
+    const note:Note={id,title:file.name.replace(/\.[^.]+$/,""),subject:"Imported · "+result.kind,updated:"Just now",color:"blue",excerpt:(result.text||"Original file stored in Supabase Storage").slice(0,110),body:result.extractable?result.text:"Original file stored securely in Supabase Storage. Download the source from the Library.",filePath:storagePath};
+    await persistNoteToCloud(note);
     setNotes(old=>[note,...old]);
-    notify("Imported and backed up "+file.name+" to Supabase");
+    notify("Uploaded "+file.name+" to Supabase Storage");
    }catch(error){notify(file.name+": "+(error instanceof Error?error.message:"could not be read"))}
   }
   e.target.value="";
