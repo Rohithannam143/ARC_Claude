@@ -1,4 +1,5 @@
-import { useEffect, useMemo, useRef, useState } from "react";\nimport type { ChangeEvent } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import type { ChangeEvent } from "react";
 import {
   Activity, ArrowLeft, ArrowRight, Bell, BookOpen, BrainCircuit, Check,
   ChevronDown, Download, FilePlus2, FileText, FolderOpen, GraduationCap,
