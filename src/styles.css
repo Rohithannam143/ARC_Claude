@@ -55,3 +55,6 @@
 .doodle-canvas{display:block;width:100%;height:auto;min-height:150px;aspect-ratio:1000/330;border:1px solid #343a49;border-radius:8px;background-color:#0b0e15;background-image:radial-gradient(#34394a 1px,transparent 1px);background-size:18px 18px;touch-action:none;cursor:crosshair}
 .doodle-hint{display:block;margin-top:9px}
 @media(max-width:620px){.doodle-head{flex-direction:column}.doodle-tools{gap:7px}.doodle-tools .primary-button{width:100%;justify-content:center;margin-left:0}.doodle-panel{padding:11px}}
+
+.doodle-head-actions{display:flex;gap:7px;flex-wrap:wrap}
+.rich-editor img{display:block;max-width:100%;height:auto;margin:12px 0;border:1px solid #343a49;border-radius:8px}
