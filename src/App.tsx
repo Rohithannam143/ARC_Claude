@@ -167,7 +167,7 @@ function App(){
   finally{setTemplateBusy(false);}
  }
 
- function syncEditor(){if(editorRef.current)setDraft(cleanEditorHTML(editorRef.current.innerHTML));}
+ function syncEditor(){if(editorRef.current){editorRef.current.querySelectorAll('input[type="checkbox"]').forEach((box)=>{(box as HTMLInputElement).toggleAttribute("checked",(box as HTMLInputElement).checked)});setDraft(cleanEditorHTML(editorRef.current.innerHTML));}}
  function format(command:string,value?:string){editorRef.current?.focus();document.execCommand(command,false,value);syncEditor();}
  function insertShape(shape:string){
   editorRef.current?.focus();
@@ -256,7 +256,7 @@ function App(){
     if(supported){
      if(size>8*1024*1024){body="[Skipped: file exceeds 8 MB text extraction limit]";supported=false;}
      else{
-      try{const result=await extractDocumentText(new File([await item.async("uint8array")],path));body=result.text;kind=result.kind;supported=result.extractable;}
+      try{const result=await extractDocumentText(new File([await item.async("blob")],path));body=result.text;kind=result.kind;supported=result.extractable;}
       catch(error){body=error instanceof Error?error.message:"Extraction failed";supported=false;}
      }
     }
