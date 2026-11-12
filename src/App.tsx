@@ -170,6 +170,7 @@ function App(){
    const result=String(data.text||"").trim();
    if(!result)throw new Error("The AI returned an empty response. Please try again.");
    setAiResult(result);
+   if(mode==="cards")saveFlashcardDeck(result);
    if(mode==="chat")setAiMessages(old=>[...old,{role:"assistant",content:result}]);
    return result;
   }catch(error){const message=error instanceof Error?error.message:"AI connection failed.";setAiError(message);return "";}
