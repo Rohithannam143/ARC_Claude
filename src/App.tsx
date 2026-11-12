@@ -271,12 +271,7 @@ function App(){
   if(!notes.length){notify("Add or import notes before visualizing");return;}
   setVisualBusy(true);setVisualError("");setVisualization("");
   const source=noteKnowledge.length?noteKnowledge:notes.map(n=>({id:n.id,title:n.title,subject:n.subject,content:n.body.replace(/<[^>]*>/g," ")}));
-  const context=source.map(n=>"NOTE: "+n.title+"\
-SUBJECT: "+n.subject+"\
-CONTENT:\
-"+n.content).join("\
-\
-");
+  const context=source.map(n=>"NOTE: "+n.title+"\nSUBJECT: "+n.subject+"\nCONTENT:\n"+n.content).join("\n\n");
   const prompt="Read and understand the supplied notes as the only source. Create a complete visual explanation of the key topic relationships and process. Return (1) a short plain-language overview and (2) exactly one valid Mermaid flowchart using flowchart TD. Use simple node IDs (A, B, C), quote labels containing punctuation, avoid unsupported syntax, keep it readable (8-18 nodes), include definitions, sequence/relationships, and outcomes where the notes support them. Do not invent missing facts. If the notes cover multiple subjects, create a high-level map connecting their main topics. Put the Mermaid diagram in a ```mermaid code block.";
   const result=await callArcAI("chat",[{role:"user",content:prompt}],context.slice(0,14000));
   if(result)setVisualization(result);else setVisualError("Visualization could not be generated. Check the AI connection and try again.");
