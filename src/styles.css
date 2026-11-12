@@ -771,3 +771,37 @@ html[data-theme="light"] .toast{background:#202638!important;color:#fff!importan
   .doodle-overlay { min-height:55vh; }
   .doodle-nav-group { flex-wrap:wrap; }
 }
+
+
+/* Dual-margin Word ruler and stationery export controls */
+.editor-ruler { padding: 0 4%; overflow: visible; }
+.editor-ruler .ruler-margin-control {
+  position:absolute; bottom:-8px; left:4%; width:46%; height:9px;
+  opacity:.95; accent-color:#8b75d6; cursor:ew-resize;
+}
+.editor-ruler .ruler-right-control {
+  left:auto; right:4%; width:46%; accent-color:#c07c9c;
+}
+.editor-ruler .ruler-indent { border-top-color:#8b75d6; }
+.editor-ruler .ruler-indent.right { border-bottom-color:#c07c9c; }
+.export-tools { margin-left:auto; }
+.export-tools button {
+  display:inline-flex; align-items:center; gap:5px;
+  padding:6px 9px; border:1px solid var(--border);
+  border-radius:7px; background:var(--surface); color:var(--text);
+  font-size:11px; font-weight:650; cursor:pointer;
+}
+.export-tools button:hover { border-color:var(--accent); background:var(--surface-hover,var(--panel)); }
+.stationery-page .editor-title {
+  width:100%; background:transparent; border:0; border-bottom:1px solid currentColor;
+  border-radius:0; color:inherit; padding:4px 0 12px;
+}
+.stationery-page .editor-title:focus { outline:none; box-shadow:0 1px 0 var(--accent); }
+.stationery-page .rich-editor { line-height:2.05 !important; }
+.stationery-page.theme-diary .rich-editor { background-image:repeating-linear-gradient(to bottom,transparent 0,transparent 31px,#d8c9ad 32px)!important; }
+@media(max-width:700px) {
+  .export-tools { margin-left:0; width:100%; }
+  .export-tools button { flex:1; justify-content:center; }
+  .editor-ruler .ruler-margin-control { width:43%; }
+  .editor-ruler .ruler-right-control { width:43%; }
+}
