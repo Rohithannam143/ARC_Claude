@@ -248,9 +248,10 @@ function App(){
   for(const file of files){
    try{
     const result=await extractDocumentText(file);
+    if(!result.extractable){notify(file.name+": content extraction is not supported yet; file was not added.");continue;}
     const id=Date.now()+Math.random();
-    setNotes(old=>[{id,title:file.name.replace(/\.[^.]+$/,""),subject:result.extractable?"Imported · "+result.kind:"Library reference · "+result.kind,updated:"Just now",color:"blue",excerpt:(result.text||"No text extracted").slice(0,110),body:result.text},...old]);
-    notify(result.extractable?"Imported "+file.name:"Added "+file.name+" as a library reference");
+    setNotes(old=>[{id,title:file.name.replace(/\.[^.]+$/,""),subject:"Imported · "+result.kind,updated:"Just now",color:"blue",excerpt:(result.text||"No text extracted").slice(0,110),body:result.text},...old]);
+    notify("Imported "+file.name);
    }catch(error){notify(file.name+": "+(error instanceof Error?error.message:"could not be read"))}
   }
   e.target.value="";
