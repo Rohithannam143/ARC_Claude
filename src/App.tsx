@@ -8,7 +8,7 @@ import {
   Plus, Search, Settings2, Sparkles, Star, Strikethrough, Trash2, Underline, UploadCloud, X, Pencil, Eraser
 } from "lucide-react";
 
-import { createWorker } from "tesseract.js";
+import { createWorker } from "tesseract.js";\nimport { GlobalWorkerOptions, getDocument } from "pdfjs-dist";\nimport pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";\nimport * as mammoth from "mammoth";\nimport * as XLSX from "xlsx";\n\nGlobalWorkerOptions.workerSrc = pdfWorkerUrl;
 
 type ArchiveEntry = { path:string; size:number; kind:string; text:string; supported:boolean };
 type Note = { id:number; title:string; subject:string; updated:string; color:string; excerpt:string; body:string };
@@ -176,16 +176,64 @@ function App(){
  }
  function saveNote(){if(!current)return;syncEditor();const body=editorRef.current?cleanEditorHTML(editorRef.current.innerHTML):draft;const title=titleDraft.trim()||"Untitled note";setNotes(old=>old.map(n=>n.id===current.id?{...n,title,body,excerpt:body.replace(/[#*\\n]/g," ").slice(0,110),updated:"Just now"}:n));notify("Note saved on this device")}
  function createNote(){const id=Date.now();const n:Note={id,title:"Untitled note",subject:"Unsorted",updated:"Just now",color:"violet",excerpt:"Start writing your ideas…",body:""};setNotes(old=>[n,...old]);setSelected(id);setActive("Editor")}
+ async function extractDocumentText(file:File):Promise<{text:string;kind:string;extractable:boolean}>{
+  const ext=file.name.split(".").pop()?.toLowerCase()||"";
+  const maxBytes=50*1024*1024;
+  if(file.size>maxBytes)throw new Error("File exceeds the 50 MB import limit.");
+  if(["txt","md","markdown","csv","json","html","htm","xml","log","yaml","yml","rtf"].includes(ext)){
+   let text=await file.text();
+   if(["html","htm"].includes(ext)){const doc=new DOMParser().parseFromString(text,"text/html");text=doc.body.innerText||doc.body.textContent||"";}
+   if(ext==="json"){try{text=JSON.stringify(JSON.parse(text),null,2)}catch{}}
+   return{text,kind:ext.toUpperCase(),extractable:true};
+  }
+  if(ext==="pdf"){
+   const pdf=await getDocument({data:new Uint8Array(await file.arrayBuffer()),isEvalSupported:false}).promise;
+   const pages:string[]=[];
+   for(let pageNo=1;pageNo<=Math.min(pdf.numPages,150);pageNo++){const page=await pdf.getPage(pageNo);const content=await page.getTextContent();pages.push(content.items.map((item:any)=>"str" in item?item.str:"").join(" "));}
+   return{text:pages.join("\n\n"),kind:"PDF",extractable:true};
+  }
+  if(ext==="docx"){
+   const result=await mammoth.extractRawText({arrayBuffer:await file.arrayBuffer()});
+   return{text:result.value,kind:"DOCX",extractable:true};
+  }
+  if(["xlsx","xls"].includes(ext)){
+   const workbook=XLSX.read(await file.arrayBuffer(),{type:"array"});
+   const text=workbook.SheetNames.map(name=>"SHEET: "+name+"\n"+XLSX.utils.sheet_to_csv(workbook.Sheets[name])).join("\n\n");
+   return{text,kind:ext.toUpperCase(),extractable:true};
+  }
+  if(ext==="pptx"){
+   const zip=await JSZip.loadAsync(file);
+   const slides=Object.keys(zip.files).filter(path=>/^ppt\/slides\/slide\d+\.xml$/.test(path)).sort((a,b)=>Number(a.match(/slide(\d+)/)?.[1])-Number(b.match(/slide(\d+)/)?.[1]));
+   const textParts:string[]=[];
+   for(let i=0;i<slides.length;i++){const xml=await zip.file(slides[i])?.async("text")||"";const values=[...xml.matchAll(/<a:t>([\s\S]*?)<\/a:t>/g)].map(m=>m[1].replace(/&amp;/g,"&").replace(/&lt;/g,"<").replace(/&gt;/g,">"));textParts.push("SLIDE "+(i+1)+"\n"+values.join(" "));}
+   return{text:textParts.join("\n\n"),kind:"PPTX",extractable:true};
+  }
+  if(ext==="odt"||ext==="epub"){
+   const zip=await JSZip.loadAsync(file);
+   const paths=ext==="odt"?["content.xml"]:Object.keys(zip.files).filter(x=>/\.(xhtml|html|htm)$/i.test(x));
+   const parts:string[]=[];
+   for(const path of paths){const raw=await zip.file(path)?.async("text");if(raw){const doc=new DOMParser().parseFromString(raw,"text/html");parts.push(doc.body.innerText||doc.body.textContent||raw.replace(/<[^>]+>/g," "));}}
+   return{text:parts.join("\n\n"),kind:ext.toUpperCase(),extractable:true};
+  }
+  if(["png","jpg","jpeg","webp","bmp","tif","tiff"].includes(ext)){
+   const worker=await createWorker("eng");
+   try{const result=await worker.recognize(await file.arrayBuffer());return{text:result.data.text.trim(),kind:"IMAGE OCR",extractable:true};}
+   finally{await worker.terminate();}
+  }
+  if(["mp3","wav","m4a","aac","ogg","mp4","mov","webm","avi"].includes(ext)){
+   return{text:"Media file attached to library: "+file.name+"\nSize: "+file.size.toLocaleString()+" bytes\n\nAutomatic transcription is not enabled yet. Use an audio/video transcription tool to convert this media into text.",kind:ext.toUpperCase()+" MEDIA",extractable:false};
+  }
+  return{text:"File indexed: "+file.name+"\nType: "+(file.type||ext||"unknown")+"\nSize: "+file.size.toLocaleString()+" bytes\n\nThis binary format is stored as a library reference only; text extraction is not available in the browser build.",kind:ext.toUpperCase()||"FILE",extractable:false};
+ }
  async function importFiles(e:ChangeEvent<HTMLInputElement>){
   const files=Array.from(e.target.files||[]);
   for(const file of files){
    try{
-    const text=await file.text();
-    if(!/\\.(txt|md|markdown|csv|json|html|htm|xml|log)$/i.test(file.name)){notify(file.name+": unsupported file type");continue}
+    const result=await extractDocumentText(file);
     const id=Date.now()+Math.random();
-    setNotes(old=>[{id,title:file.name.replace(/\\.[^.]+$/,""),subject:"Imported document",updated:"Just now",color:"blue",excerpt:text.slice(0,110),body:text},...old]);
-    notify("Imported "+file.name);
-   }catch{notify("Could not read "+file.name)}
+    setNotes(old=>[{id,title:file.name.replace(/\.[^.]+$/,""),subject:result.extractable?"Imported · "+result.kind:"Library reference · "+result.kind,updated:"Just now",color:"blue",excerpt:(result.text||"No text extracted").slice(0,110),body:result.text},...old]);
+    notify(result.extractable?"Imported "+file.name:"Added "+file.name+" as a library reference");
+   }catch(error){notify(file.name+": "+(error instanceof Error?error.message:"could not be read"))}
   }
   e.target.value="";
  }
