@@ -1,130 +1,62 @@
-import { useMemo, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import {
-  Activity, ArrowRight, Bell, BookOpen,
-  BrainCircuit, Check, ChevronDown, FilePlus2, FileText,
-  FolderOpen, GraduationCap, LayoutDashboard, Lightbulb, Menu,
-  MessageSquareText, MoreHorizontal, Plus, Search, Settings2,
-  Sparkles, Star, UploadCloud, X
+  Activity, ArrowLeft, ArrowRight, Bell, BookOpen, BrainCircuit, Check,
+  ChevronDown, Download, FilePlus2, FileText, FolderOpen, GraduationCap,
+  LayoutDashboard, Lightbulb, Menu, MessageSquareText, MoreHorizontal,
+  Plus, Search, Settings2, Sparkles, Star, Trash2, UploadCloud, X
 } from "lucide-react";
 
-type Note = { id: number; title: string; subject: string; updated: string; color: string; excerpt: string };
-
-const starterNotes: Note[] = [
-  { id: 1, title: "Introduction to Artificial Intelligence", subject: "Artificial Intelligence", updated: "Today · 10:42 AM", color: "violet", excerpt: "Core concepts, intelligent agents, problem-solving and search strategies." },
-  { id: 2, title: "Compiler Design — Lexical Analysis", subject: "Compiler Design", updated: "Yesterday", color: "blue", excerpt: "Tokens, patterns, lexemes and the role of a lexical analyser." },
-  { id: 3, title: "Cloud Computing Fundamentals", subject: "Cloud Computing", updated: "Nov 10", color: "orange", excerpt: "Service models, deployment models, virtualization and cloud architecture." },
+type Note = { id:number; title:string; subject:string; updated:string; color:string; excerpt:string; body:string };
+const starterNotes:Note[]=[
+ {id:1,title:"Introduction to Artificial Intelligence",subject:"Artificial Intelligence",updated:"Today",color:"violet",excerpt:"Core concepts, intelligent agents, problem-solving and search strategies.",body:"# Introduction to Artificial Intelligence\n\nArtificial Intelligence (AI) is the field of building systems that can perform tasks that normally require human intelligence.\n\n## Key topics\n- Intelligent agents\n- Problem-solving agents\n- Search strategies\n- Heuristic functions\n\nAdd your own class notes here."},
+ {id:2,title:"Compiler Design — Lexical Analysis",subject:"Compiler Design",updated:"Yesterday",color:"blue",excerpt:"Tokens, patterns, lexemes and the role of a lexical analyser.",body:"# Lexical Analysis\n\nA lexical analyser is the first phase of a compiler. It reads source code and groups characters into tokens.\n\n## Important terms\n- Token: a category such as identifier or keyword\n- Lexeme: the actual character sequence\n- Pattern: the rule describing a token"},
+ {id:3,title:"Cloud Computing Fundamentals",subject:"Cloud Computing",updated:"Nov 10",color:"orange",excerpt:"Service models, deployment models, virtualization and cloud architecture.",body:"# Cloud Computing Fundamentals\n\nCloud computing provides on-demand access to computing resources over a network.\n\n## Service models\n- IaaS\n- PaaS\n- SaaS"}
 ];
-
-const navItems = [
-  { label: "Overview", icon: LayoutDashboard },
-  { label: "My Notes", icon: FileText },
-  { label: "Library", icon: FolderOpen },
-  { label: "AI Study Room", icon: BrainCircuit },
-  { label: "Flashcards", icon: GraduationCap },
-];
-
-function App() {
-  const [active, setActive] = useState("Overview");
-  const [query, setQuery] = useState("");
-  const [notes, setNotes] = useState(starterNotes);
-  const [showCreate, setShowCreate] = useState(false);
-  const [mobileNav, setMobileNav] = useState(false);
-  const [newTitle, setNewTitle] = useState("");
-
-  const filteredNotes = useMemo(
-    () => notes.filter((note) => (note.title + note.subject + note.excerpt).toLowerCase().includes(query.toLowerCase())),
-    [notes, query]
-  );
-
-  function createNote() {
-    const title = newTitle.trim();
-    if (!title) return;
-    setNotes([{ id: Date.now(), title, subject: "Unsorted", updated: "Just now", color: "violet", excerpt: "Your new note is ready. Start adding your ideas." }, ...notes]);
-    setNewTitle("");
-    setShowCreate(false);
-    setActive("My Notes");
-  }
-
-  return (
-    <div className="app-shell">
-      <aside className={`sidebar ${mobileNav ? "sidebar-open" : ""}`}>
-        <div className="brand-row">
-          <div className="brand-mark"><Sparkles size={19} /></div>
-          <span className="brand-name">arc<span>.</span></span>
-          <button className="icon-button mobile-close" onClick={() => setMobileNav(false)} aria-label="Close navigation"><X size={18} /></button>
-        </div>
-        <button className="workspace-switch">
-          <div className="workspace-avatar">R</div>
-          <span><strong>My workspace</strong><small>Personal plan</small></span>
-          <ChevronDown size={15} />
-        </button>
-        <button className="new-note-button" onClick={() => setShowCreate(true)}><Plus size={17} /> Create new note <span>⌘ K</span></button>
-        <div className="nav-caption">WORKSPACE</div>
-        <nav className="main-nav">
-          {navItems.map(({ label, icon: Icon }) => (
-            <button key={label} className={`nav-item ${active === label ? "active" : ""}`} onClick={() => { setActive(label); setMobileNav(false); }}>
-              <Icon size={17} strokeWidth={1.8} /><span>{label}</span>{label === "AI Study Room" && <span className="nav-new">NEW</span>}
-            </button>
-          ))}
-        </nav>
-        <div className="nav-caption collections-caption">YOUR COLLECTIONS <button aria-label="Add collection"><Plus size={14} /></button></div>
-        <button className="collection-item"><span className="collection-dot dot-purple" /> Semester 5</button>
-        <button className="collection-item"><span className="collection-dot dot-blue" /> Exam preparation</button>
-        <button className="collection-item"><span className="collection-dot dot-orange" /> Project research</button>
-        <div className="sidebar-bottom">
-          <div className="storage-card"><div className="storage-heading"><span>Workspace storage</span><span>12%</span></div><div className="storage-track"><i /></div><small>1.2 GB of 10 GB used</small></div>
-          <button className="nav-item"><Settings2 size={17} /><span>Settings</span></button>
-          <div className="profile-row"><div className="profile-avatar">R</div><span><strong>Rohith</strong><small>Free workspace</small></span><MoreHorizontal size={18} /></div>
-        </div>
-      </aside>
-
-      {mobileNav && <button className="mobile-scrim" onClick={() => setMobileNav(false)} aria-label="Close menu" />}
-
-      <main className="main-area">
-        <header className="topbar">
-          <div className="breadcrumb"><button className="icon-button mobile-menu" onClick={() => setMobileNav(true)} aria-label="Open navigation"><Menu size={19} /></button><span>Workspace</span><span className="crumb-slash">/</span><strong>{active}</strong></div>
-          <div className="topbar-actions">
-            <label className="search-box"><Search size={16} /><input value={query} onChange={(e) => setQuery(e.target.value)} placeholder="Search anything..." /><kbd>⌘ K</kbd></label>
-            <button className="icon-button notification-button" aria-label="Notifications"><Bell size={18} /><i /></button>
-            <div className="top-avatar">R</div>
-          </div>
-        </header>
-
-        <div className="page-content">
-          <section className="welcome-row">
-            <div><div className="eyebrow"><span className="live-dot" /> YOUR PERSONAL KNOWLEDGE SPACE</div><h1>{active === "Overview" ? "Good morning, Rohith" : active}<span className="wave">✦</span></h1><p>{active === "Overview" ? "Your ideas, notes and learning — all in one intelligent workspace." : "Everything you need, organized in one place."}</p></div>
-            <button className="primary-button" onClick={() => setShowCreate(true)}><Plus size={17} /> New note</button>
-          </section>
-
-          <section className="hero-card">
-            <div className="hero-copy"><div className="hero-label"><Sparkles size={14} /> MEET YOUR AI STUDY PARTNER</div><h2>Think clearly.<br /><em>Learn deeply.</em></h2><p>Turn scattered information into structured knowledge. Ask questions, understand complex topics and make every study session count.</p><button className="hero-button" onClick={() => setActive("AI Study Room")}>Open AI Study Room <ArrowRight size={16} /></button></div>
-            <div className="hero-art" aria-hidden="true"><div className="orbit orbit-one" /><div className="orbit orbit-two" /><div className="orb-core"><BrainCircuit size={54} strokeWidth={1.15} /></div><div className="float-chip chip-top"><Sparkles size={14} /> AI insights</div><div className="float-chip chip-bottom"><Check size={14} /> Knowledge organized</div><div className="tiny-star star-a">✳</div><div className="tiny-star star-b">✦</div></div>
-          </section>
-
-          <section className="stats-grid">
-            <div className="stat-card"><div className="stat-icon purple-icon"><FileText size={18} /></div><div><span>Total notes</span><strong>{notes.length.toString().padStart(2, "0")}</strong><small><span className="stat-positive">↗ 2</span> this week</small></div></div>
-            <div className="stat-card"><div className="stat-icon blue-icon"><BookOpen size={18} /></div><div><span>Study collections</span><strong>03</strong><small>Across your subjects</small></div></div>
-            <div className="stat-card"><div className="stat-icon orange-icon"><Activity size={18} /></div><div><span>Learning streak</span><strong>05 <small className="days">days</small></strong><small><span className="stat-positive">Keep it up!</span></small></div></div>
-            <div className="stat-card"><div className="stat-icon green-icon"><Lightbulb size={18} /></div><div><span>AI summaries</span><strong>12</strong><small>Knowledge made simple</small></div></div>
-          </section>
-
-          <section className="section-heading"><div><h3>Continue learning</h3><p>Pick up right where you left off.</p></div><button className="text-button" onClick={() => setActive("My Notes")}>View all <ArrowRight size={15} /></button></section>
-          <section className="notes-grid">
-            {filteredNotes.length ? filteredNotes.map((note) => <article className="note-card" key={note.id}><div className="note-card-top"><div className={`note-icon ${note.color}`}><FileText size={18} /></div><button className="icon-button" aria-label="More note actions"><MoreHorizontal size={18} /></button></div><div className="note-subject">{note.subject}</div><h4>{note.title}</h4><p>{note.excerpt}</p><div className="note-footer"><span>{note.updated}</span><button aria-label={`Open ${note.title}`} onClick={() => setActive("My Notes")}><ArrowRight size={16} /></button></div></article>) : <div className="empty-state"><Search size={22} /><strong>No notes found</strong><span>Try another search term.</span></div>}
-            <button className="add-note-card" onClick={() => setShowCreate(true)}><span><Plus size={20} /></span><strong>Create a new note</strong><small>Capture a thought or start studying</small></button>
-          </section>
-
-          <section className="bottom-grid">
-            <div className="tip-card"><div className="tip-icon"><Lightbulb size={18} /></div><div><span className="tip-label">A LITTLE STUDY TIP</span><h4>Small sessions. Big progress.</h4><p>Try the 25-minute focus method: study one concept, take a short break, then explain what you learned in your own words.</p></div><Star className="tip-star" size={17} /></div>
-            <div className="quick-card"><h3>Quick actions</h3><button onClick={() => setShowCreate(true)}><FilePlus2 size={17} /><span>Write a new note</span><ArrowRight size={15} /></button><button onClick={() => setActive("Library")}><UploadCloud size={17} /><span>Import a document</span><ArrowRight size={15} /></button><button onClick={() => setActive("AI Study Room")}><MessageSquareText size={17} /><span>Ask AI a question</span><ArrowRight size={15} /></button></div>
-          </section>
-          <footer className="footer"><span>ARC AI <span className="footer-dot">·</span> Your knowledge, connected.</span><span>Made for curious minds <Sparkles size={12} /></span></footer>
-        </div>
-      </main>
-
-      {showCreate && <div className="modal-backdrop" onClick={() => setShowCreate(false)}><div className="create-modal" onClick={(e) => e.stopPropagation()}><div className="modal-heading"><div><span className="modal-kicker">NEW DOCUMENT</span><h3>Create a note</h3></div><button className="icon-button" onClick={() => setShowCreate(false)} aria-label="Close"><X size={19} /></button></div><label className="modal-label" htmlFor="note-title">Note title</label><input id="note-title" autoFocus value={newTitle} onChange={(e) => setNewTitle(e.target.value)} onKeyDown={(e) => e.key === "Enter" && createNote()} placeholder="e.g. Operating Systems — Unit 1" /><div className="modal-actions"><button className="secondary-button" onClick={() => setShowCreate(false)}>Cancel</button><button className="primary-button" disabled={!newTitle.trim()} onClick={createNote}>Create note <ArrowRight size={15} /></button></div></div></div>}
-    </div>
-  );
+const navItems=[{label:"Overview",icon:LayoutDashboard},{label:"My Notes",icon:FileText},{label:"Library",icon:FolderOpen},{label:"AI Study Room",icon:BrainCircuit},{label:"Flashcards",icon:GraduationCap}];
+function App(){
+ const [active,setActive]=useState("Overview");
+ const [query,setQuery]=useState("");
+ const [notes,setNotes]=useState<Note[]>(()=>{try{return JSON.parse(localStorage.getItem("arc-notes")||"null")||starterNotes}catch{return starterNotes}});
+ const [mobileNav,setMobileNav]=useState(false);
+ const [selected,setSelected]=useState<number|null>(null);
+ const [draft,setDraft]=useState("");
+ const [titleDraft,setTitleDraft]=useState("");
+ const [toast,setToast]=useState("");
+ const fileRef=useRef<HTMLInputElement>(null);
+ const current=notes.find(n=>n.id===selected)||null;
+ useEffect(()=>{localStorage.setItem("arc-notes",JSON.stringify(notes))},[notes]);
+ useEffect(()=>{if(current){setDraft(current.body);setTitleDraft(current.title)}},[selected]);
+ const filtered=useMemo(()=>notes.filter(n=>(n.title+n.subject+n.excerpt+n.body).toLowerCase().includes(query.toLowerCase())),[notes,query]);
+ function notify(s:string){setToast(s);window.setTimeout(()=>setToast(""),2600)}
+ function openNote(n:Note){setSelected(n.id);setActive("Editor")}
+ function saveNote(){if(!current)return;const body=draft;const title=titleDraft.trim()||"Untitled note";setNotes(old=>old.map(n=>n.id===current.id?{...n,title,body,excerpt:body.replace(/[#*\\n]/g," ").slice(0,110),updated:"Just now"}:n));notify("Note saved on this device")}
+ function createNote(){const id=Date.now();const n:Note={id,title:"Untitled note",subject:"Unsorted",updated:"Just now",color:"violet",excerpt:"Start writing your ideas…",body:""};setNotes(old=>[n,...old]);setSelected(id);setActive("Editor")}
+ async function importFiles(e:ChangeEvent<HTMLInputElement>){const files=Array.from(e.target.files||[]);for(const file of files){try{const text=await file.text();if(!/\\.(txt|md|markdown|csv)$/i.test(file.name)){notify(file.name+": currently import TXT, MD or CSV files");continue}const id=Date.now()+Math.random();setNotes(old=>[{id,title:file.name.replace(/\\.[^.]+$/,""),subject:"Imported document",updated:"Just now",color:"blue",excerpt:text.slice(0,110),body:text},...old]);notify("Imported "+file.name)}catch{notify("Could not read "+file.name)}}e.target.value=""}
+ function exportNote(){if(!current)return;const blob=new Blob([draft],{type:"text/markdown"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=(titleDraft||"arc-note")+".md";a.click();URL.revokeObjectURL(url)}
+ function deleteNote(){if(!current)return;setNotes(old=>old.filter(n=>n.id!==current.id));setSelected(null);setActive("My Notes");notify("Note deleted")}
+ return <div className="app-shell">
+ <aside className={`sidebar ${mobileNav?"sidebar-open":""}`}>
+  <div className="brand-row"><div className="brand-mark"><Sparkles size={19}/></div><span className="brand-name">arc<span>.</span></span><button className="icon-button mobile-close" onClick={()=>setMobileNav(false)}><X size={18}/></button></div>
+  <button className="workspace-switch"><div className="workspace-avatar">R</div><span><strong>My workspace</strong><small>Personal plan · Local mode</small></span><ChevronDown size={15}/></button>
+  <button className="new-note-button" onClick={createNote}><Plus size={17}/> Create new note <span>⌘ N</span></button>
+  <div className="nav-caption">WORKSPACE</div><nav className="main-nav">{navItems.map(({label,icon:Icon})=><button key={label} className={`nav-item ${active===label?"active":""}`} onClick={()=>{setActive(label);setSelected(null);setMobileNav(false)}}><Icon size={17}/><span>{label}</span>{label==="AI Study Room"&&<span className="nav-new">BETA</span>}</button>)}</nav>
+  <div className="nav-caption collections-caption">YOUR COLLECTIONS <button aria-label="Add collection"><Plus size={14}/></button></div>
+  <button className="collection-item"><span className="collection-dot dot-purple"/> Semester 5</button><button className="collection-item"><span className="collection-dot dot-blue"/> Exam preparation</button><button className="collection-item"><span className="collection-dot dot-orange"/> Project research</button>
+  <div className="sidebar-bottom"><div className="storage-card"><div className="storage-heading"><span>Saved on this device</span><span>LOCAL</span></div><div className="storage-track"><i/></div><small>Your notes stay in this browser</small></div><button className="nav-item"><Settings2 size={17}/><span>Settings</span></button><div className="profile-row"><div className="profile-avatar">R</div><span><strong>Rohith</strong><small>Personal workspace</small></span><MoreHorizontal size={18}/></div></div>
+ </aside>
+ {mobileNav&&<button className="mobile-scrim" onClick={()=>setMobileNav(false)} aria-label="Close menu"/>}
+ <main className="main-area">
+  <header className="topbar"><div className="breadcrumb"><button className="icon-button mobile-menu" onClick={()=>setMobileNav(true)}><Menu size={19}/></button><span>Workspace</span><span className="crumb-slash">/</span><strong>{active}</strong></div><div className="topbar-actions"><label className="search-box"><Search size={16}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search notes…"/><kbd>⌘ K</kbd></label><button className="icon-button notification-button" aria-label="Notifications"><Bell size={18}/></button><div className="top-avatar">R</div></div></header>
+  <div className="page-content">
+  {active==="Editor"&&current?<><div className="editor-toolbar"><button className="text-button" onClick={()=>{setSelected(null);setActive("My Notes")}}><ArrowLeft size={15}/> All notes</button><div className="editor-actions"><span className="save-status"><Check size={13}/> Saved locally when you click Save</span><button className="secondary-button" onClick={exportNote}><Download size={15}/> Export .md</button><button className="secondary-button danger-button" onClick={deleteNote}><Trash2 size={15}/></button><button className="primary-button" onClick={saveNote}>Save note <Check size={15}/></button></div></div><div className="editor-wrap"><input className="editor-title" value={titleDraft} onChange={e=>setTitleDraft(e.target.value)} placeholder="Untitled note"/><div className="editor-meta"><span>{current.subject}</span><span>Markdown supported · Autosave is manual</span></div><textarea className="note-editor" value={draft} onChange={e=>setDraft(e.target.value)} placeholder="Start writing your notes here…&#10;&#10;Use # for headings, - for lists, and blank lines to organize your thoughts."/></div></>:active==="AI Study Room"?<section className="module-page"><div className="eyebrow"><span className="live-dot"/> AI LEARNING WORKSPACE</div><h1>AI Study Room</h1><p>Ask questions about your notes and study topics. AI provider connection is the next integration step.</p><div className="ai-setup-card"><div className="ai-setup-icon"><BrainCircuit size={26}/></div><div><h3>Your study copilot is being connected</h3><p>The chat interface is ready for the secure AI backend. No fake answers are shown while the provider is not configured.</p><span className="integration-tag">Backend integration pending</span></div></div><div className="module-grid"><div className="module-tile"><Sparkles/><h3>Explain a concept</h3><p>Get beginner-friendly explanations from your study material.</p></div><div className="module-tile"><BookOpen/><h3>Summarize notes</h3><p>Turn long documents into clear revision notes.</p></div><div className="module-tile"><GraduationCap/><h3>Practice questions</h3><p>Prepare for exams with topic-wise questions.</p></div></div></section>:active==="Flashcards"?<section className="module-page"><div className="eyebrow"><span className="live-dot"/> ACTIVE RECALL</div><h1>Flashcards</h1><p>Build a revision deck from your own notes.</p><div className="empty-module"><GraduationCap size={30}/><h3>Your flashcard library starts here</h3><p>Open a note and organize key terms into question-and-answer cards. Flashcard generation will be added with the AI service.</p><button className="primary-button" onClick={()=>setActive("My Notes")}>Browse my notes <ArrowRight size={15}/></button></div></section>:active==="Library"?<section className="module-page"><div className="eyebrow"><span className="live-dot"/> DOCUMENT LIBRARY</div><div className="module-title-row"><div><h1>Library</h1><p>Bring your study material into ARC AI.</p></div><button className="primary-button" onClick={()=>fileRef.current?.click()}><UploadCloud size={16}/> Import files</button></div><input ref={fileRef} type="file" multiple accept=".txt,.md,.markdown,.csv" hidden onChange={importFiles}/><div className="upload-panel" onClick={()=>fileRef.current?.click()}><UploadCloud size={27}/><h3>Drop in your documents</h3><p>Click to browse · Supported now: TXT, Markdown and CSV</p><small>PDF, DOCX and presentation parsing will be added in the next import module.</small></div><h3 className="library-heading">Your documents · {notes.length}</h3><div className="library-list">{notes.map(n=><button key={n.id} className="library-row" onClick={()=>openNote(n)}><FileText/><span><strong>{n.title}</strong><small>{n.subject} · {n.updated}</small></span><ArrowRight size={16}/></button>)}</div></section>:<><section className="welcome-row"><div><div className="eyebrow"><span className="live-dot"/> YOUR PERSONAL KNOWLEDGE SPACE</div><h1>{active==="Overview"?"Good morning, Rohith":active}<span className="wave">✦</span></h1><p>Your ideas, notes and learning — all in one intelligent workspace.</p></div><button className="primary-button" onClick={createNote}><Plus size={17}/> New note</button></section>
+  {active==="Overview"&&<section className="hero-card"><div className="hero-copy"><div className="hero-label"><Sparkles size={14}/> MEET YOUR AI STUDY PARTNER</div><h2>Think clearly.<br/><em>Learn deeply.</em></h2><p>Turn scattered information into structured knowledge. Ask questions, understand complex topics and make every study session count.</p><button className="hero-button" onClick={()=>setActive("AI Study Room")}>Open AI Study Room <ArrowRight size={16}/></button></div><div className="hero-art"><div className="orbit orbit-one"/><div className="orbit orbit-two"/><div className="orb-core"><BrainCircuit size={54}/></div><div className="float-chip chip-top"><Sparkles size={14}/> AI insights</div><div className="float-chip chip-bottom"><Check size={14}/> Knowledge organized</div><div className="tiny-star star-a">✳</div><div className="tiny-star star-b">✦</div></div></section>}
+  <section className="stats-grid"><div className="stat-card"><div className="stat-icon purple-icon"><FileText size={18}/></div><div><span>Total notes</span><strong>{notes.length.toString().padStart(2,"0")}</strong><small>Saved in this browser</small></div></div><div className="stat-card"><div className="stat-icon blue-icon"><BookOpen size={18}/></div><div><span>Study collections</span><strong>03</strong><small>Across your subjects</small></div></div><div className="stat-card"><div className="stat-icon orange-icon"><Activity size={18}/></div><div><span>Learning streak</span><strong>—</strong><small>Tracking coming soon</small></div></div><div className="stat-card"><div className="stat-icon green-icon"><Lightbulb size={18}/></div><div><span>AI summaries</span><strong>—</strong><small>AI connection pending</small></div></div></section>
+  <section className="section-heading"><div><h3>{active==="My Notes"?"All notes":"Continue learning"}</h3><p>{active==="My Notes"?"Your saved notes and imported material.":"Pick up right where you left off."}</p></div><button className="text-button" onClick={()=>setActive("My Notes")}>View all <ArrowRight size={15}/></button></section>
+  <section className="notes-grid">{filtered.length?filtered.map(n=><article className="note-card" key={n.id} onClick={()=>openNote(n)}><div className="note-card-top"><div className={`note-icon ${n.color}`}><FileText size={18}/></div><button className="icon-button" onClick={e=>{e.stopPropagation();openNote(n)}} aria-label="Open note"><MoreHorizontal size={18}/></button></div><div className="note-subject">{n.subject}</div><h4>{n.title}</h4><p>{n.excerpt}</p><div className="note-footer"><span>{n.updated}</span><button aria-label="Edit note"><ArrowRight size={16}/></button></div></article>):<div className="empty-state"><Search size={22}/><strong>No notes found</strong><span>Try another search term.</span></div>}<button className="add-note-card" onClick={createNote}><span><Plus size={20}/></span><strong>Create a new note</strong><small>Capture a thought or start studying</small></button></section>
+  <section className="bottom-grid"><div className="tip-card"><div className="tip-icon"><Lightbulb size={18}/></div><div><span className="tip-label">A LITTLE STUDY TIP</span><h4>Small sessions. Big progress.</h4><p>Try the 25-minute focus method: study one concept, take a short break, then explain what you learned in your own words.</p></div><Star className="tip-star" size={17}/></div><div className="quick-card"><h3>Quick actions</h3><button onClick={createNote}><FilePlus2 size={17}/><span>Write a new note</span><ArrowRight size={15}/></button><button onClick={()=>setActive("Library")}><UploadCloud size={17}/><span>Import a document</span><ArrowRight size={15}/></button><button onClick={()=>setActive("AI Study Room")}><MessageSquareText size={17}/><span>Ask AI a question</span><ArrowRight size={15}/></button></div></section>
+  </>}
+  <footer className="footer"><span>ARC AI <span className="footer-dot">·</span> Your knowledge, connected.</span><span>Made for curious minds <Sparkles size={12}/></span></footer></div>
+ </main>{toast&&<div className="toast"><Check size={15}/>{toast}</div>}
+ </div>
 }
-
 export default App;
