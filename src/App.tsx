@@ -321,8 +321,8 @@ function App(){
  }
  function downloadNotePdf(){
   if(!current)return;syncEditor();const colors=noteThemeColors(),pdf=new jsPDF({unit:"mm",format:"a4"}),plain=notePlainText(),lines=pdf.splitTextToSize(plain,170);const title=titleDraft||current.title;
-  const drawPage=(page:number)=>{pdf.setFillColor(colors.paper);pdf.rect(0,0,210,297,"F");pdf.setDrawColor(colors.rule);for(let y=35;y<282;y+=8)pdf.line(16,y,194,y);pdf.setTextColor(colors.ink);pdf.setFont("helvetica","bold");pdf.setFontSize(19);pdf.text(title,16,23);pdf.setFont("helvetica","normal");pdf.setFontSize(10);pdf.text(current.subject||"ARC AI Notes",16,29);pdf.setFontSize(11);};
-  drawPage(1);let y=43;for(const line of lines){if(y>280){pdf.addPage();drawPage(pdf.getNumberOfPages());y=43;}pdf.text(String(line),16,y);y+=8;}
+  const drawPage=()=>{pdf.setFillColor(colors.paper);pdf.rect(0,0,210,297,"F");pdf.setDrawColor(colors.rule);for(let y=35;y<282;y+=8)pdf.line(16,y,194,y);pdf.setTextColor(colors.ink);pdf.setFont("helvetica","bold");pdf.setFontSize(19);pdf.text(title,16,23);pdf.setFont("helvetica","normal");pdf.setFontSize(10);pdf.text(current.subject||"ARC AI Notes",16,29);pdf.setFontSize(11);};
+  drawPage();let y=43;for(const line of lines){if(y>280){pdf.addPage();drawPage();y=43;}pdf.text(String(line),16,y);y+=8;}
   pdf.save((title||"ARC-Note").replace(/[^a-z0-9-_ ]/gi,"").trim()+".pdf");notify("PDF downloaded");
  }
  async function saveNote(){if(!current)return;syncEditor();const body=editorRef.current?cleanEditorHTML(editorRef.current.innerHTML):draft;const title=titleDraft.trim()||"Untitled note";const updated={...current,title,body,excerpt:body.replace(/[#*\\n]/g," ").slice(0,110),updated:"Just now"};setNotes(old=>old.map(n=>n.id===current.id?updated:n));try{await persistNoteToCloud(updated);notify("Note saved on this device and Supabase")}catch(error){notify("Saved locally; Supabase sync failed: "+(error instanceof Error?error.message:"connection error"))}}
