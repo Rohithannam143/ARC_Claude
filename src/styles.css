@@ -37,3 +37,21 @@
 .rich-editor [style*="text-align: center"]{text-align:center}
 .rich-editor [style*="text-align: right"]{text-align:right}
 @media(max-width:700px){.rich-toolbar{position:static;gap:5px;padding:7px}.tool-group{padding-right:5px}.tool-group select{max-width:104px}.rich-editor{min-height:55vh;padding-top:18px}}
+
+/* Smart doodle canvas */
+.doodle-panel{margin:18px 0 12px;padding:15px;border:1px solid #343044;border-radius:11px;background:#10141d}
+.doodle-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.doodle-head>div{display:grid;gap:5px}
+.doodle-head strong{display:flex;align-items:center;gap:7px;color:#e9e7f4;font-size:11px}
+.doodle-head strong svg{color:#b4a0ff}
+.doodle-head small,.doodle-hint{font-size:9px;line-height:1.5;color:#858d9d}
+.doodle-head .secondary-button{display:flex;align-items:center;gap:6px;white-space:nowrap}
+.doodle-tools{display:flex;align-items:center;flex-wrap:wrap;gap:10px;margin:13px 0}
+.doodle-tools select{height:33px;padding:0 9px;border:1px solid #343a49;border-radius:7px;background:#1a202c;color:#d8d9e2;font-size:10px}
+.doodle-tools label{display:flex;align-items:center;gap:6px;color:#9ba2b1;font-size:9px}
+.doodle-tools input[type=color]{width:28px;height:27px;padding:2px;border:1px solid #343a49;border-radius:6px;background:#1a202c}
+.doodle-tools input[type=range]{width:75px;accent-color:#9b83ff}
+.doodle-tools .primary-button{margin-left:auto}
+.doodle-canvas{display:block;width:100%;height:auto;min-height:150px;aspect-ratio:1000/330;border:1px solid #343a49;border-radius:8px;background-color:#0b0e15;background-image:radial-gradient(#34394a 1px,transparent 1px);background-size:18px 18px;touch-action:none;cursor:crosshair}
+.doodle-hint{display:block;margin-top:9px}
+@media(max-width:620px){.doodle-head{flex-direction:column}.doodle-tools{gap:7px}.doodle-tools .primary-button{width:100%;justify-content:center;margin-left:0}.doodle-panel{padding:11px}}
