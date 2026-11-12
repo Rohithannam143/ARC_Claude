@@ -5,10 +5,9 @@ import {
   Activity, AlignCenter, AlignLeft, AlignRight, ArrowLeft, ArrowRight, Bold, Bell, BookOpen, BrainCircuit, Check, CheckSquare, ClipboardList, ExternalLink, Moon, Sun, Send,
   ChevronDown, Download, FilePlus2, FileText, FolderOpen, GraduationCap,
   Highlighter, Italic, LayoutDashboard, Lightbulb, List, ListOrdered, Menu, MessageSquareText, MoreHorizontal,
-  Plus, Search, Settings2, Sparkles, Star, Strikethrough, Trash2, Underline, UploadCloud, X, Pencil, Eraser
+  Plus, Search, Settings2, Sparkles, Star, Strikethrough, Trash2, Underline, UploadCloud, X, Pencil
 } from "lucide-react";
 
-import { createWorker } from "tesseract.js";
 import { GlobalWorkerOptions, getDocument } from "pdfjs-dist";
 import pdfWorkerUrl from "pdfjs-dist/build/pdf.worker.min.mjs?url";
 import * as mammoth from "mammoth";
@@ -60,10 +59,9 @@ function App(){
  const [isDoodleMode,setIsDoodleMode]=useState(false);
  const completedStrokesRef=useRef<{points:{x:number;y:number}[];mode:string;color:string;width:number}[]>([]);
  const [rulerIndent,setRulerIndent]=useState(24);
- const [drawMode,setDrawMode]=useState<"pen"|"line"|"rectangle"|"circle">("pen");
+ const drawMode="pen";
  const [drawColor,setDrawColor]=useState("#d5d7e0");
- const [drawWidth,setDrawWidth]=useState(3);
- const [recognizing,setRecognizing]=useState(false);
+ const drawWidth=3;
  const [theme,setTheme]=useState<"dark"|"light">(()=>localStorage.getItem("arc-theme")==="light"?"light":"dark");
  const [firebaseKey,setFirebaseKey]=useState(()=>localStorage.getItem("arc-firebase-api-key")||"AIzaSyDdIapYAZlLhJFL6OZ7ixw6pIuRFq4pdxs");
  const [aiMessages,setAiMessages]=useState<{role:"user"|"assistant";content:string}[]>([]);
@@ -155,8 +153,6 @@ function App(){
   syncEditor();notify("Drawing inserted into your note");
  }
  function clearDrawing(){const c=drawCanvasRef.current;completedStrokesRef.current=[];drawPointsRef.current=[];if(c){const ctx=c.getContext("2d");if(ctx)ctx.clearRect(0,0,c.width,c.height);}}
- async function recognizeDrawingText(){const canvas=drawCanvasRef.current;if(!canvas)return;setRecognizing(true);try{const worker=await createWorker("eng");const result=await worker.recognize(canvas);await worker.terminate();const text=result.data.text.trim();if(!text){notify("No readable text detected. Try clearer handwriting.");return;}if(editorRef.current){editorRef.current.focus();document.execCommand("insertText",false,"\n"+text+"\n");syncEditor();}notify("Handwriting converted to editable text");}catch{notify("Text recognition failed. Check your connection and try again.");}finally{setRecognizing(false);}}
-
  async function getFirebaseIdToken(){
   if(!firebaseKey.trim())throw new Error("Add your Firebase Web API key in Settings first.");
   const cached=sessionStorage.getItem("arc-firebase-id-token");
