@@ -34,8 +34,8 @@ const config = {
     projectId,
     appId: process.env.FIREBASE_APP_ID || "YOUR_APP_ID"
   },
-  supabaseUrl: process.env.SUPABASE_URL || "https://YOUR_REF.supabase.co",
-  supabaseAnon: process.env.SUPABASE_ANON_KEY || "YOUR_SUPABASE_ANON_KEY"
+  supabaseUrl: process.env.SUPABASE_URL || "https://oremmzzhmyhqqftexcor.supabase.co",
+  supabaseAnon: process.env.SUPABASE_ANON_KEY || "sb_publishable_uk5GRLB0Mo7bOzY-piT9tA_NOwaHIZi"
 };
 fs.writeFileSync(path.join(output, "config.js"),
   "window.ARC_CONFIG = " + JSON.stringify(config, null, 2) + ";\n");
