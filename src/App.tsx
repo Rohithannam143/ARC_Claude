@@ -27,7 +27,7 @@ function cleanEditorHTML(input:string){
    walk(child);
    if(!allowed.has(child.tagName)){child.replaceWith(...Array.from(child.childNodes));return;}
    Array.from(child.attributes).forEach(attr=>{
-    if(child.tagName==="IMG"&&attr.name==="src"&&/^data:image\\/png;base64,/.test(attr.value))return;
+    if(child.tagName==="IMG"&&attr.name==="src"&&attr.value.startsWith("data:image/png;base64,"))return;
     if(attr.name==="face"||attr.name==="color"||attr.name==="size"){if(child.tagName==="FONT"&&/^(face|color|size)$/.test(attr.name))return;child.removeAttribute(attr.name);return;}
     if(attr.name!=="style"){child.removeAttribute(attr.name);return;}
     const safe=attr.value.split(";").map(rule=>rule.trim()).filter(rule=>/^(color|background-color|font-family|font-size|font-weight|font-style|text-align|text-decoration|border|border-radius|padding|margin|display|width|height)\s*:/i.test(rule)&&!/(url\(|expression|javascript:)/i.test(rule));
@@ -44,7 +44,13 @@ function initialEditorHTML(value:string){
 }
 
 function App(){
- const drawCanvasRef=useRef<HTMLCanvasElement>(null);\n const drawPointsRef=useRef<{x:number;y:number}[]>([]);\n const [drawing,setDrawing]=useState(false);\n const [drawMode,setDrawMode]=useState<"pen"|"line"|"rectangle"|"circle">("pen");\n const [drawColor,setDrawColor]=useState("#d5d7e0");\n const [drawWidth,setDrawWidth]=useState(3);\n const [recognizing,setRecognizing]=useState(false);
+ const drawCanvasRef=useRef<HTMLCanvasElement>(null);
+ const drawPointsRef=useRef<{x:number;y:number}[]>([]);
+ const [drawing,setDrawing]=useState(false);
+ const [drawMode,setDrawMode]=useState<"pen"|"line"|"rectangle"|"circle">("pen");
+ const [drawColor,setDrawColor]=useState("#d5d7e0");
+ const [drawWidth,setDrawWidth]=useState(3);
+ const [recognizing,setRecognizing]=useState(false);
  const [active,setActive]=useState("Overview");
  const [query,setQuery]=useState("");
  const [notes,setNotes]=useState<Note[]>(()=>{try{return JSON.parse(localStorage.getItem("arc-notes")||"null")||starterNotes}catch{return starterNotes}});
