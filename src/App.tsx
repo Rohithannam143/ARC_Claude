@@ -148,9 +148,18 @@ function App(){
  function cancelDoodle(){clearDrawing();setIsDoodleMode(false);}
  function insertDrawingIntoNote(){
   const canvas=drawCanvasRef.current;if(!canvas||!editorRef.current)return;
-  const image=canvas.toDataURL("image/png");editorRef.current.focus();
-  document.execCommand("insertHTML",false,'<p><img src="'+image+'" alt="Hand-drawn diagram" style="max-width:100%;height:auto;border-radius:8px" /></p>');
-  syncEditor();notify("Drawing inserted into your note");
+  const ctx=canvas.getContext("2d");if(!ctx)return;
+  const pixels=ctx.getImageData(0,0,canvas.width,canvas.height),data=pixels.data;
+  let minX=canvas.width,minY=canvas.height,maxX=0,maxY=0,found=false;
+  for(let y=0;y<canvas.height;y++){for(let x=0;x<canvas.width;x++){if(data[(y*canvas.width+x)*4+3]>8){found=true;minX=Math.min(minX,x);minY=Math.min(minY,y);maxX=Math.max(maxX,x);maxY=Math.max(maxY,y);}}}
+  if(!found){notify("Draw something on the note before pressing Done");return;}
+  const pad=18,left=Math.max(0,minX-pad),top=Math.max(0,minY-pad),right=Math.min(canvas.width,maxX+pad),bottom=Math.min(canvas.height,maxY+pad);
+  const cropped=document.createElement("canvas");cropped.width=right-left;cropped.height=bottom-top;
+  const cropCtx=cropped.getContext("2d");if(!cropCtx)return;
+  cropCtx.drawImage(canvas,left,top,cropped.width,cropped.height,0,0,cropped.width,cropped.height);
+  const image=cropped.toDataURL("image/png");editorRef.current.focus();
+  document.execCommand("insertHTML",false,'<img src="'+image+'" alt="Hand-drawn diagram" style="max-width:100%;height:auto;vertical-align:middle" />');
+  syncEditor();notify("Doodle added to your note");
  }
  function clearDrawing(){const c=drawCanvasRef.current;completedStrokesRef.current=[];drawPointsRef.current=[];if(c){const ctx=c.getContext("2d");if(ctx)ctx.clearRect(0,0,c.width,c.height);}}
  async function getFirebaseIdToken(){
