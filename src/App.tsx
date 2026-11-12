@@ -61,7 +61,7 @@ function App(){
  const [drawWidth,setDrawWidth]=useState(3);
  const [recognizing,setRecognizing]=useState(false);
  const [theme,setTheme]=useState<"dark"|"light">(()=>localStorage.getItem("arc-theme")==="light"?"light":"dark");
- const [firebaseKey,setFirebaseKey]=useState(()=>localStorage.getItem("arc-firebase-api-key")||"");
+ const [firebaseKey,setFirebaseKey]=useState(()=>localStorage.getItem("arc-firebase-api-key")||"AIzaSyDdIapYAZlLhJFL6OZ7ixw6pIuRFq4pdxs");
  const [aiMessages,setAiMessages]=useState<{role:"user"|"assistant";content:string}[]>([]);
  const [aiInput,setAiInput]=useState("");
  const [aiBusy,setAiBusy]=useState(false);
