@@ -26,13 +26,13 @@ for (const entry of zip.getEntries()) {
 
 // Public browser configuration is injected at build time. Never place Groq,
 // Supabase service-role, JWT, or other server secrets in these variables.
-const projectId = process.env.FIREBASE_PROJECT_ID || "YOUR_PROJECT_ID";
+const projectId = process.env.FIREBASE_PROJECT_ID || "e-commerce-2a038";
 const config = {
   firebase: {
-    apiKey: process.env.FIREBASE_API_KEY || "YOUR_FIREBASE_API_KEY",
-    authDomain: process.env.FIREBASE_AUTH_DOMAIN || (projectId + ".firebaseapp.com"),
+    apiKey: process.env.FIREBASE_API_KEY || "AIzaSyDdIapYAZlLhJFL6OZ7ixw6pIuRFq4pdxs",
+    authDomain: process.env.FIREBASE_AUTH_DOMAIN || "e-commerce-2a038.firebaseapp.com",
     projectId,
-    appId: process.env.FIREBASE_APP_ID || "YOUR_APP_ID"
+    appId: process.env.FIREBASE_APP_ID || "1:192530734099:web:21fed5d0f661f3a821f3e6"
   },
   supabaseUrl: process.env.SUPABASE_URL || "https://oremmzzhmyhqqftexcor.supabase.co",
   supabaseAnon: process.env.SUPABASE_ANON_KEY || "sb_publishable_uk5GRLB0Mo7bOzY-piT9tA_NOwaHIZi"
