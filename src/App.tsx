@@ -7,7 +7,7 @@ import {
   Activity, AlignCenter, AlignLeft, AlignRight, ArrowLeft, ArrowRight, Bold, Bell, BookOpen, BrainCircuit, Check, CheckSquare, ClipboardList, ExternalLink, Moon, Sun, Send,
   ChevronDown, Download, FilePlus2, FileText, FolderOpen, GraduationCap,
   Highlighter, Italic, LayoutDashboard, Lightbulb, List, ListOrdered, Menu, MessageSquareText, MoreHorizontal,
-  Plus, Search, Settings2, Sparkles, Star, Strikethrough, Trash2, Underline, UploadCloud, X, Pencil, Workflow, Eye, RefreshCw
+  Plus, Search, Settings2, Sparkles, Star, Strikethrough, Trash2, Underline, UploadCloud, X, Pencil, Workflow, RefreshCw
 } from "lucide-react";
 
 import { GlobalWorkerOptions, getDocument } from "pdfjs-dist";
