@@ -192,7 +192,7 @@ function App(){
    const firebaseToken=await getFirebaseIdToken();
    const existing=await cloudRequest<any[]>(firebaseToken,"notes?select=id,title,subject,content,file_path,updated_at");
    for(const note of notes){
-    const filePath="local:"+note.id;
+    const filePath=note.filePath||("note:"+note.id);
     const payload={title:note.title,subject:note.subject,content:note.body,file_path:filePath,updated_at:new Date().toISOString()};
     const row=existing.find(item=>item.file_path===filePath);
     if(row){
@@ -440,12 +440,12 @@ function App(){
  return <div className="app-shell">
  <aside className={`sidebar ${mobileNav?"sidebar-open":""}`}>
   <div className="brand-row"><div className="brand-mark" aria-hidden="true"><svg viewBox="0 0 48 48" role="img"><defs><linearGradient id="arcNoteGradient" x1="5" y1="4" x2="43" y2="44" gradientUnits="userSpaceOnUse"><stop stopColor="#B9A7FF"/><stop offset="1" stopColor="#7355E8"/></linearGradient></defs><rect x="5" y="4" width="31" height="39" rx="7" fill="url(#arcNoteGradient)"/><path d="M27 4v10a4 4 0 0 0 4 4h5" fill="#EDE8FF" opacity=".9"/><path d="M12 22h16M12 28h13M12 34h9" stroke="#fff" strokeWidth="2.4" strokeLinecap="round"/><path d="m37 25 1.8 4.2L43 31l-4.2 1.8L37 37l-1.8-4.2L31 31l4.2-1.8L37 25Z" fill="#E9E1FF" stroke="#7355E8" strokeWidth=".8"/></svg></div><span className="brand-name">ARC <span>AI</span><small>NOTES</small></span><button className="icon-button mobile-close" onClick={()=>setMobileNav(false)}><X size={18}/></button></div>
-  <button className="workspace-switch"><div className="workspace-avatar">R</div><span><strong>My workspace</strong><small>Personal plan · Local mode</small></span><ChevronDown size={15}/></button>
+  <button className="workspace-switch"><div className="workspace-avatar">R</div><span><strong>My workspace</strong><small>Personal workspace · Supabase cloud</small></span><ChevronDown size={15}/></button>
   <button className="new-note-button" onClick={createNote}><Plus size={17}/> Create new note <span>⌘ N</span></button>
   <div className="nav-caption">WORKSPACE</div><nav className="main-nav">{navItems.map(({label,icon:Icon})=><button key={label} className={`nav-item ${active===label?"active":""}`} onClick={()=>{setActive(label);setSelected(null);setMobileNav(false)}}><Icon size={17}/><span>{label}</span>{label==="AI Study Room"&&<span className="nav-new">BETA</span>}</button>)}</nav>
   <div className="nav-caption collections-caption">YOUR COLLECTIONS <button aria-label="Add collection"><Plus size={14}/></button></div>
   <button className="collection-item"><span className="collection-dot dot-purple"/> Semester 5</button><button className="collection-item"><span className="collection-dot dot-blue"/> Exam preparation</button><button className="collection-item"><span className="collection-dot dot-orange"/> Project research</button>
-  <div className="sidebar-bottom"><div className="storage-card"><div className="storage-heading"><span>Saved on this device</span><span>LOCAL</span></div><div className="storage-track"><i/></div><small>Your notes stay in this browser</small></div><button className={`nav-item ${active==="Settings"?"active":""}`} onClick={()=>{setActive("Settings");setSelected(null);setMobileNav(false)}}><Settings2 size={17}/><span>Settings</span></button><div className="profile-row"><div className="profile-avatar">R</div><span><strong>Rohith</strong><small>Personal workspace</small></span><MoreHorizontal size={18}/></div></div>
+  <div className="sidebar-bottom"><div className="storage-card"><div className="storage-heading"><span>Cloud + device storage</span><span>SUPABASE</span></div><div className="storage-track"><i/></div><small>Saved notes and imported files sync to your private cloud</small></div><button className={`nav-item ${active==="Settings"?"active":""}`} onClick={()=>{setActive("Settings");setSelected(null);setMobileNav(false)}}><Settings2 size={17}/><span>Settings</span></button><div className="profile-row"><div className="profile-avatar">R</div><span><strong>Rohith</strong><small>Personal workspace</small></span><MoreHorizontal size={18}/></div></div>
  </aside>
  {mobileNav&&<button className="mobile-scrim" onClick={()=>setMobileNav(false)} aria-label="Close menu"/>}
  <main className="main-area">
