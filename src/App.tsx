@@ -138,7 +138,7 @@ function App(){
    const context=notes.map(n=>"TITLE: "+n.title+"\nSUBJECT: "+n.subject+"\n"+n.body.replace(/<[^>]*>/g," ")).join("\n\n").slice(0,14000);
    const response=await fetch("https://oremmzzhmyhqqftexcor.supabase.co/functions/v1/arc",{method:"POST",headers:{"Content-Type":"application/json",Authorization:"Bearer "+idToken},body:JSON.stringify({action:"ai",mode,context,messages})});
    const data=await response.json();
-   if(!response.ok)throw new Error(data.error||"AI request failed ("+response.status+").");
+   if(!response.ok)throw new Error((data.error||"AI request failed ("+response.status+").")+(Array.isArray(data.missing)&&data.missing.length?" Missing configuration: "+data.missing.join(", "):""));
    const result=String(data.text||"").trim();
    if(!result)throw new Error("The AI returned an empty response. Please try again.");
    setAiResult(result);
