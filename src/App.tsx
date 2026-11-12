@@ -384,7 +384,7 @@ function App(){
     if(!result.extractable){notify(file.name+": content extraction is not supported yet; file was not added.");continue;}
     const id=Date.now()+Math.random();
     const note:Note={id,title:file.name.replace(/\.[^.]+$/,""),subject:"Imported · "+result.kind,updated:"Just now",color:"blue",excerpt:(result.text||"No text extracted").slice(0,110),body:result.text};
-    const {token,uid}=await persistNoteToCloud(note);
+    const token=await getFirebaseIdToken();const uid=firebaseUid(token);if(!uid)throw new Error("Could not identify cloud user.");
     const storagePath=await uploadUserFile(token,file,uid);
     await persistNoteToCloud(note,storagePath);
     setNotes(old=>[note,...old]);
