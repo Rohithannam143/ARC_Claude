@@ -540,3 +540,132 @@ html[data-theme="light"] .toast{background:#202638!important;color:#fff!importan
 .rich-toolbar button.active-tool{background:#514274;color:#fff}
 
 .editor-ruler .ruler-margin-control{position:absolute;left:8%;bottom:-7px;width:84%;height:8px;opacity:.65;accent-color:#9b83ff;cursor:ew-resize}
+
+
+/* ARC editor refinement — retain the existing workspace and stationery */
+.editor-wrap {
+  width: 100%;
+  max-width: none;
+  padding: clamp(20px, 2.4vw, 34px);
+  border-radius: 14px;
+  min-height: 76vh;
+  box-shadow: 0 14px 38px #00000018;
+}
+.editor-title { font-size: clamp(23px, 2vw, 29px); line-height: 1.25; }
+.editor-meta { align-items: center; flex-wrap: wrap; padding: 10px 0 14px; }
+.doodle-panel {
+  margin: 14px 0 10px;
+  padding: 12px;
+  border-radius: 10px;
+}
+.doodle-head { align-items: center; }
+.doodle-head small { max-width: 520px; }
+.doodle-tools { gap: 8px; margin: 10px 0; }
+.doodle-tools .primary-button { padding: 8px 11px; font-size: 10px; }
+.doodle-canvas {
+  aspect-ratio: 1000 / 220;
+  max-height: 220px;
+  min-height: 120px;
+  background-size: 16px 16px;
+}
+.rich-toolbar {
+  position: sticky;
+  top: 66px;
+  z-index: 5;
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 6px;
+  padding: 8px;
+  margin-top: 10px;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  background: var(--panel);
+  box-shadow: 0 5px 16px #00000012;
+}
+.rich-toolbar .tool-group { gap: 3px; }
+.rich-toolbar button, .rich-toolbar select {
+  min-height: 30px;
+  border-radius: 6px;
+}
+.editor-ruler {
+  height: 38px;
+  margin: 10px 0 0;
+  background: #ffffff80;
+  border-color: #8e8b9a66;
+}
+.editor-ruler .ruler-tick { color: #777487; }
+.editor-ruler .ruler-margin-control { opacity: .9; }
+.rich-editor {
+  min-height: 58vh !important;
+  margin-top: 12px;
+  padding-top: 14px !important;
+  padding-bottom: 60px;
+  font-size: 15px !important;
+  line-height: 2.05 !important;
+  overflow-wrap: anywhere;
+  outline: none;
+}
+.rich-editor:empty:before {
+  content: attr(data-placeholder);
+  color: #8d8992;
+  opacity: .7;
+  pointer-events: none;
+}
+.rich-editor p { margin: 0 0 .65em; }
+.editor-wrap[class*="theme-"] .rich-editor {
+  background-color: transparent !important;
+  background-image: repeating-linear-gradient(
+    to bottom,
+    transparent 0,
+    transparent 31px,
+    currentColor 32px
+  ) !important;
+  background-size: 100% 32px !important;
+  background-position: 0 8px !important;
+  color: inherit !important;
+  opacity: .96;
+}
+.editor-wrap.theme-diary .rich-editor { --paper-rule: #d8c9ad; }
+.editor-wrap.theme-diary .rich-editor { background-image: repeating-linear-gradient(to bottom,transparent 0,transparent 31px,#d8c9ad 32px)!important; }
+.editor-wrap.theme-love .rich-editor { background-image: repeating-linear-gradient(to bottom,transparent 0,transparent 31px,#e7c3cf 32px)!important; }
+.editor-wrap.theme-friendship .rich-editor { background-image: repeating-linear-gradient(to bottom,transparent 0,transparent 31px,#c5dfd0 32px)!important; }
+.editor-wrap.theme-romantic .rich-editor { background-image: repeating-linear-gradient(to bottom,transparent 0,transparent 31px,#ddc9df 32px)!important; }
+.editor-wrap[class*="theme-"] .rich-toolbar,
+.editor-wrap[class*="theme-"] .doodle-panel {
+  color: #373342;
+  background: #ffffffd9;
+  box-shadow: 0 3px 12px #3b2b2410;
+}
+.editor-wrap[class*="theme-"] .rich-toolbar button { color: #51465f; }
+.editor-wrap[class*="theme-"] .rich-toolbar button:hover,
+.editor-wrap[class*="theme-"] .rich-toolbar button.active-tool { background: #e8def7; color: #45345f; }
+.editor-wrap[class*="theme-"] .rich-toolbar select,
+.editor-wrap[class*="theme-"] .doodle-tools select {
+  color: #40394b;
+  background: #fff;
+  border-color: #d8cfdf;
+}
+.editor-wrap[class*="theme-"] .doodle-head strong { color: #40394b; }
+.editor-wrap[class*="theme-"] .doodle-head small,
+.editor-wrap[class*="theme-"] .doodle-hint,
+.editor-wrap[class*="theme-"] .doodle-tools label { color: #6f6875; }
+.editor-wrap[class*="theme-"] .doodle-canvas {
+  background-color: #fffdfb;
+  border-color: #d8cfdf;
+}
+@media (max-width: 900px) {
+  .rich-toolbar { position: static; }
+  .editor-wrap { min-height: 0; }
+  .rich-editor { min-height: 55vh !important; }
+}
+@media (max-width: 600px) {
+  .editor-wrap { padding: 16px 12px; }
+  .doodle-canvas { aspect-ratio: 1000 / 260; min-height: 115px; }
+  .doodle-head { align-items: flex-start; }
+  .doodle-head-actions { width: 100%; }
+  .doodle-head-actions button { flex: 1; justify-content: center; }
+  .rich-toolbar { gap: 4px; padding: 6px; }
+  .rich-toolbar .tool-group { padding-right: 5px; }
+  .rich-editor { font-size: 14px !important; }
+}
