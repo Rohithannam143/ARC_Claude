@@ -19,13 +19,13 @@ const navItems=[{label:"Overview",icon:LayoutDashboard},{label:"My Notes",icon:F
 
 function cleanEditorHTML(input:string){
  const doc=new DOMParser().parseFromString(input,"text/html");
- const allowed=new Set(["P","DIV","BR","STRONG","B","EM","I","U","S","STRIKE","H1","H2","H3","H4","UL","OL","LI","BLOCKQUOTE","SPAN","HR"]);
+ const allowed=new Set(["P","DIV","BR","STRONG","B","EM","I","U","S","STRIKE","H1","H2","H3","H4","UL","OL","LI","BLOCKQUOTE","SPAN","FONT","HR"]);
  const walk=(node:Element)=>{
   Array.from(node.children).forEach(child=>{
    walk(child);
    if(!allowed.has(child.tagName)){child.replaceWith(...Array.from(child.childNodes));return;}
    Array.from(child.attributes).forEach(attr=>{
-    if(attr.name!=="style"){child.removeAttribute(attr.name);return;}
+    if(attr.name==="face"||attr.name==="color"||attr.name==="size"){if(child.tagName==="FONT"&&/^(face|color|size)$/.test(attr.name))return;child.removeAttribute(attr.name);return;}\n    if(attr.name!=="style"){child.removeAttribute(attr.name);return;}
     const safe=attr.value.split(";").map(rule=>rule.trim()).filter(rule=>/^(color|background-color|font-family|font-size|font-weight|font-style|text-align|text-decoration|border|border-radius|padding|margin|display|width|height)\s*:/i.test(rule)&&!/(url\(|expression|javascript:)/i.test(rule));
     if(safe.length)child.setAttribute("style",safe.join(";"));else child.removeAttribute("style");
    });
@@ -35,7 +35,7 @@ function cleanEditorHTML(input:string){
  return doc.body.innerHTML;
 }
 function initialEditorHTML(value:string){
- if(/<(p|div|br|strong|b|em|i|u|h[1-6]|ul|ol|li|blockquote|span)\b/i.test(value))return cleanEditorHTML(value);
+ if(/<(p|div|br|strong|b|em|i|u|h[1-6]|ul|ol|li|blockquote|span|font)\b/i.test(value))return cleanEditorHTML(value);
  return value.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\n/g,"<br>");
 }
 
