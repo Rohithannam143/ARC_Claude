@@ -8,7 +8,9 @@ import {
   Plus, Search, Settings2, Sparkles, Star, Strikethrough, Trash2, Underline, UploadCloud, X, Pencil, Eraser
 } from "lucide-react";
 
-import { createWorker } from "tesseract.js";\n\ntype ArchiveEntry = { path:string; size:number; kind:string; text:string; supported:boolean };
+import { createWorker } from "tesseract.js";
+
+type ArchiveEntry = { path:string; size:number; kind:string; text:string; supported:boolean };
 type Note = { id:number; title:string; subject:string; updated:string; color:string; excerpt:string; body:string };
 const starterNotes:Note[]=[
  {id:1,title:"Introduction to Artificial Intelligence",subject:"Artificial Intelligence",updated:"Today",color:"violet",excerpt:"Core concepts, intelligent agents, problem-solving and search strategies.",body:"# Introduction to Artificial Intelligence\n\nArtificial Intelligence (AI) is the field of building systems that can perform tasks that normally require human intelligence.\n\n## Key topics\n- Intelligent agents\n- Problem-solving agents\n- Search strategies\n- Heuristic functions\n\nAdd your own class notes here."},
@@ -41,7 +43,8 @@ function initialEditorHTML(value:string){
  return value.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\n/g,"<br>");
 }
 
-function App(){\n const drawCanvasRef=useRef<HTMLCanvasElement>(null);\n const drawPointsRef=useRef<{x:number;y:number}[]>([]);\n const [drawing,setDrawing]=useState(false);\n const [drawMode,setDrawMode]=useState<"pen"|"line"|"rectangle"|"circle">("pen");\n const [drawColor,setDrawColor]=useState("#d5d7e0");\n const [drawWidth,setDrawWidth]=useState(3);\n const [recognizing,setRecognizing]=useState(false);
+function App(){
+ const drawCanvasRef=useRef<HTMLCanvasElement>(null);\n const drawPointsRef=useRef<{x:number;y:number}[]>([]);\n const [drawing,setDrawing]=useState(false);\n const [drawMode,setDrawMode]=useState<"pen"|"line"|"rectangle"|"circle">("pen");\n const [drawColor,setDrawColor]=useState("#d5d7e0");\n const [drawWidth,setDrawWidth]=useState(3);\n const [recognizing,setRecognizing]=useState(false);
  const [active,setActive]=useState("Overview");
  const [query,setQuery]=useState("");
  const [notes,setNotes]=useState<Note[]>(()=>{try{return JSON.parse(localStorage.getItem("arc-notes")||"null")||starterNotes}catch{return starterNotes}});
@@ -90,8 +93,9 @@ function App(){\n const drawCanvasRef=useRef<HTMLCanvasElement>(null);\n const d
   syncEditor();notify("Drawing inserted into your note");
  }
  function clearDrawing(){const c=drawCanvasRef.current;if(c){const ctx=c.getContext("2d");if(ctx)ctx.clearRect(0,0,c.width,c.height);}}
- async function recognizeDrawingText(){const canvas=drawCanvasRef.current;if(!canvas)return;setRecognizing(true);try{const worker=await createWorker("eng");const result=await worker.recognize(canvas);await worker.terminate();const text=result.data.text.trim();if(!text){notify("No readable text detected. Try clearer handwriting.");return;}if(editorRef.current){editorRef.current.focus();document.execCommand("insertText",false,"\\n"+text+"\\n");syncEditor();}notify("Handwriting converted to editable text");}catch{notify("Text recognition failed. Check your connection and try again.");}finally{setRecognizing(false);}}
-\n function syncEditor(){if(editorRef.current)setDraft(cleanEditorHTML(editorRef.current.innerHTML));}
+ async function recognizeDrawingText(){const canvas=drawCanvasRef.current;if(!canvas)return;setRecognizing(true);try{const worker=await createWorker("eng");const result=await worker.recognize(canvas);await worker.terminate();const text=result.data.text.trim();if(!text){notify("No readable text detected. Try clearer handwriting.");return;}if(editorRef.current){editorRef.current.focus();document.execCommand("insertText",false,"\n"+text+"\n");syncEditor();}notify("Handwriting converted to editable text");}catch{notify("Text recognition failed. Check your connection and try again.");}finally{setRecognizing(false);}}
+
+ function syncEditor(){if(editorRef.current)setDraft(cleanEditorHTML(editorRef.current.innerHTML));}
  function format(command:string,value?:string){editorRef.current?.focus();document.execCommand(command,false,value);syncEditor();}
  function insertShape(shape:string){
   editorRef.current?.focus();
