@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import {
-  Activity, Archive, ArrowDownToLine, ArrowRight, Bell, BookOpen,
-  BrainCircuit, Check, ChevronDown, Command, FilePlus2, FileText,
+  Activity, ArrowRight, Bell, BookOpen,
+  BrainCircuit, Check, ChevronDown, FilePlus2, FileText,
   FolderOpen, GraduationCap, LayoutDashboard, Lightbulb, Menu,
   MessageSquareText, MoreHorizontal, Plus, Search, Settings2,
   Sparkles, Star, UploadCloud, X
