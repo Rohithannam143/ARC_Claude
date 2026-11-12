@@ -21,6 +21,12 @@ The app uses Firebase Email/Password Authentication. In Firebase Console:
 3. Add `rohithannam143.github.io` (hostname only).
 4. Confirm email/password sign-up and email verification are enabled.
 
+## Guest mode
+
+The ARC Edge Function now accepts Firebase Anonymous Authentication tokens as well as verified email/password tokens (function version 3). This allows guest accounts to receive the same short-lived Supabase user token and use per-user RLS safely. Guest data is associated with the anonymous Firebase UID; users should link/upgrade the anonymous account to an email/password account to retain access across devices and avoid losing data when the anonymous account is cleared.
+
+To enable the client-side guest button, open Firebase Console → Authentication → Sign-in method → Anonymous and enable it. The web client must call Firebase signInAnonymously(auth) when the user selects Continue as Guest, then use the resulting Firebase ID token with the existing ARC token endpoint. The client UI source is packaged inside arc-secure.zip; the front-end button and sign-in flow still need to be added to that source archive.
+
 ## Supabase backend
 
 The Supabase project is `oremmzzhmyhqqftexcor` in `ap-southeast-2`.
