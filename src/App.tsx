@@ -224,7 +224,7 @@ function App(){
  function enterGuestMode(){localStorage.setItem("arc-guest-mode","true");setIsGuest(true);setAuthError("");}
  function signOut(){const label=authUser?"your account session":"guest session";if(!window.confirm(`Sign out of ARC AI?\n\nThis will end ${label} on this device. Your saved notes will remain on this device.\n\nContinue?`))return;localStorage.removeItem("arc-guest-mode");setIsGuest(false);localStorage.removeItem("arc-auth-session");sessionStorage.removeItem("arc-firebase-id-token");sessionStorage.removeItem("arc-firebase-token-expiry");setAuthUser(null);setActive("Overview");}
  async function getFirebaseIdToken(){
-  if(!authUser)throw new Error("Please sign in to use cloud sync and ARC AI.");
+  if(isGuest||!authUser)throw new Error("Guest mode is local-only. Sign in with your account to access Supabase cloud storage, sync, and cloud AI.");
   if(authUser.expiresAt>Date.now()+60000)return authUser.idToken;
   const refreshed=await refreshFirebaseSession(authUser);return refreshed.idToken;
  }
