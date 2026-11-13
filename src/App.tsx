@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import type { ChangeEvent } from "react";
+import type { ChangeEvent, FormEvent } from "react";
 import JSZip from "jszip";
 import { jsPDF } from "jspdf";
 import { createWorker } from "tesseract.js";
@@ -194,7 +194,7 @@ function App(){
   const next:FirebaseUser={...session,idToken:data.id_token,refreshToken:data.refresh_token,expiresAt:Date.now()+Number(data.expires_in||3600)*1000};
   localStorage.setItem("arc-auth-session",JSON.stringify(next));setAuthUser(next);return next;
  }
- async function handleAuthSubmit(e?:React.FormEvent){
+ async function handleAuthSubmit(e?:FormEvent){
   e?.preventDefault();if(authBusy)return;
   setAuthBusy(true);setAuthError("");
   try{
