@@ -7,7 +7,7 @@ import {
   Activity, AlignCenter, AlignLeft, AlignRight, ArrowLeft, ArrowRight, Bold, Bell, BookOpen, BrainCircuit, Check, CheckSquare, ClipboardList, ExternalLink, Moon, Sun, Send,
   ChevronDown, Download, FilePlus2, FileText, FolderOpen, GraduationCap,
   Highlighter, Italic, LayoutDashboard, Lightbulb, List, ListOrdered, Menu, MessageSquareText, MoreHorizontal,
-  Plus, Search, Settings2, Sparkles, Star, Strikethrough, Trash2, Underline, UploadCloud, X, Pencil, Workflow, RefreshCw
+  Plus, Search, Settings2, Sparkles, Star, Strikethrough, Trash2, Underline, UploadCloud, X, Pencil, Workflow, RefreshCw, Mail, LockKeyhole, LogIn, UserPlus
 } from "lucide-react";
 
 import { GlobalWorkerOptions, getDocument } from "pdfjs-dist";
@@ -68,6 +68,15 @@ function App(){
  const drawWidth=3;
  const [theme,setTheme]=useState<"dark"|"light">(()=>localStorage.getItem("arc-theme")==="light"?"light":"dark");
  const [firebaseKey,setFirebaseKey]=useState(()=>localStorage.getItem("arc-firebase-api-key")||"AIzaSyDdIapYAZlLhJFL6OZ7ixw6pIuRFq4pdxs");
+ type FirebaseUser={localId:string;email:string;idToken:string;refreshToken:string;expiresAt:number};
+ const [authUser,setAuthUser]=useState<FirebaseUser|null>(()=>{try{return JSON.parse(localStorage.getItem("arc-auth-session")||"null")}catch{return null}});
+ const [authLoading,setAuthLoading]=useState(true);
+ const [authMode,setAuthMode]=useState<"login"|"signup">("login");
+ const [authEmail,setAuthEmail]=useState("");
+ const [authPassword,setAuthPassword]=useState("");
+ const [authBusy,setAuthBusy]=useState(false);
+ const [authError,setAuthError]=useState("");
+
  const [aiMessages,setAiMessages]=useState<{role:"user"|"assistant";content:string}[]>([]);
  const [aiInput,setAiInput]=useState("");
  const [aiBusy,setAiBusy]=useState(false);
@@ -109,6 +118,7 @@ function App(){
  const fileRef=useRef<HTMLInputElement>(null);
  const editorRef=useRef<HTMLDivElement>(null);
  const current=notes.find(n=>n.id===selected)||null;
+ useEffect(()=>{let alive=true;const restore=async()=>{try{if(authUser){const valid=authUser.expiresAt>Date.now()+60000?authUser:await refreshFirebaseSession(authUser);if(alive)setAuthUser(valid);}}catch{localStorage.removeItem("arc-auth-session");if(alive)setAuthUser(null);}finally{if(alive)setAuthLoading(false);}};void restore();return()=>{alive=false}},[]);
  useEffect(()=>{localStorage.setItem("arc-notes",JSON.stringify(notes))},[notes]);
  useEffect(()=>{localStorage.setItem("arc-flashcard-decks",JSON.stringify(flashcardDecks))},[flashcardDecks]);
  useEffect(()=>{const refresh=()=>setNoteKnowledge(notes.map(n=>({id:n.id,title:n.title,subject:n.subject,content:(n.body||"").replace(/<[^>]*>/g," ").replace(/\s+/g," ").trim()})));refresh();const timer=window.setInterval(refresh,2500);return()=>window.clearInterval(timer)},[notes]);
@@ -177,17 +187,41 @@ function App(){
   syncEditor();notify("Doodle added to your note");
  }
  function clearDrawing(){const c=drawCanvasRef.current;completedStrokesRef.current=[];drawPointsRef.current=[];if(c){const ctx=c.getContext("2d");if(ctx)ctx.clearRect(0,0,c.width,c.height);}}
- async function getFirebaseIdToken(){
-  if(!firebaseKey.trim())throw new Error("Add your Firebase Web API key in Settings first.");
-  const cached=sessionStorage.getItem("arc-firebase-id-token");
-  const cachedUntil=Number(sessionStorage.getItem("arc-firebase-token-expiry")||0);
-  if(cached&&cachedUntil>Date.now()+60000)return cached;
-  const response=await fetch("https://identitytoolkit.googleapis.com/v1/accounts:signUp?key="+encodeURIComponent(firebaseKey.trim()),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({returnSecureToken:true})});
+ async function refreshFirebaseSession(session:FirebaseUser):Promise<FirebaseUser>{
+  const response=await fetch("https://securetoken.googleapis.com/v1/token?key="+encodeURIComponent(firebaseKey.trim()),{method:"POST",headers:{"Content-Type":"application/x-www-form-urlencoded"},body:new URLSearchParams({grant_type:"refresh_token",refresh_token:session.refreshToken})});
   const data=await response.json();
-  if(!response.ok)throw new Error(data.error?.message==="OPERATION_NOT_ALLOWED"?"Enable Anonymous sign-in in Firebase Authentication.":data.error?.message||"Firebase sign-in failed.");
-  sessionStorage.setItem("arc-firebase-id-token",data.idToken);
-  sessionStorage.setItem("arc-firebase-token-expiry",String(Date.now()+Number(data.expiresIn||3600)*1000));
-  return data.idToken as string;
+  if(!response.ok)throw new Error(data.error?.message||"Your session expired. Please sign in again.");
+  const next:FirebaseUser={...session,idToken:data.id_token,refreshToken:data.refresh_token,expiresAt:Date.now()+Number(data.expires_in||3600)*1000};
+  localStorage.setItem("arc-auth-session",JSON.stringify(next));setAuthUser(next);return next;
+ }
+ async function handleAuthSubmit(e?:React.FormEvent){
+  e?.preventDefault();if(authBusy)return;
+  setAuthBusy(true);setAuthError("");
+  try{
+   if(!firebaseKey.trim())throw new Error("Firebase API key is missing. Please configure it in the app settings.");
+   const endpoint=authMode==="signup"?"accounts:signUp":"accounts:signInWithPassword";
+   const response=await fetch("https://identitytoolkit.googleapis.com/v1/"+endpoint+"?key="+encodeURIComponent(firebaseKey.trim()),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({email:authEmail.trim(),password:authPassword,returnSecureToken:true})});
+   const data=await response.json();
+   if(!response.ok){const code=data.error?.message||"AUTH_FAILED";const messages:Record<string,string>={EMAIL_EXISTS:"An account with this email already exists. Sign in instead.",EMAIL_NOT_FOUND:"No account found with this email. Create an account first.",INVALID_PASSWORD:"Incorrect password. Please try again.",INVALID_LOGIN_CREDENTIALS:"Email or password is incorrect.",WEAK_PASSWORD:"Choose a password with at least 6 characters.",INVALID_EMAIL:"Enter a valid email address.",OPERATION_NOT_ALLOWED:"Email/Password sign-in is not enabled in Firebase Authentication."};throw new Error(messages[code]||code.replaceAll("_"," "));}
+   const next:FirebaseUser={localId:data.localId,email:data.email||authEmail.trim(),idToken:data.idToken,refreshToken:data.refreshToken,expiresAt:Date.now()+Number(data.expiresIn||3600)*1000};
+   localStorage.setItem("arc-auth-session",JSON.stringify(next));setAuthUser(next);setAuthPassword("");setAuthError("");
+  }catch(error){setAuthError(error instanceof Error?error.message:"Authentication failed. Please try again.");}
+  finally{setAuthBusy(false);}
+ }
+ async function sendPasswordReset(){
+  setAuthError("");
+  try{
+   if(!authEmail.trim())throw new Error("Enter your email address first.");
+   const response=await fetch("https://identitytoolkit.googleapis.com/v1/accounts:sendOobCode?key="+encodeURIComponent(firebaseKey.trim()),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({requestType:"PASSWORD_RESET",email:authEmail.trim()})});
+   const data=await response.json();if(!response.ok)throw new Error(data.error?.message||"Could not send password reset email.");
+   setAuthError("Password reset email sent. Check your inbox.");
+  }catch(error){setAuthError(error instanceof Error?error.message:"Could not send reset email.");}
+ }
+ function signOut(){localStorage.removeItem("arc-auth-session");sessionStorage.removeItem("arc-firebase-id-token");sessionStorage.removeItem("arc-firebase-token-expiry");setAuthUser(null);setActive("Overview");}
+ async function getFirebaseIdToken(){
+  if(!authUser)throw new Error("Please sign in to use cloud sync and ARC AI.");
+  if(authUser.expiresAt>Date.now()+60000)return authUser.idToken;
+  const refreshed=await refreshFirebaseSession(authUser);return refreshed.idToken;
  }
  function firebaseUid(token:string){try{return String(JSON.parse(atob(token.split(".")[1].replace(/-/g,"+").replace(/_/g,"/"))).sub||"")}catch{return ""}}
  async function persistNoteToCloud(note:Note,filePath?:string){
@@ -464,10 +498,12 @@ function App(){
  }
  function exportNote(){if(!current)return;const blob=new Blob([draft],{type:"text/markdown"});const url=URL.createObjectURL(blob);const a=document.createElement("a");a.href=url;a.download=(titleDraft||"arc-note")+".md";a.click();URL.revokeObjectURL(url)}
  function deleteNote(){if(!current)return;setNotes(old=>old.filter(n=>n.id!==current.id));setSelected(null);setActive("My Notes");notify("Note deleted")}
+ if(authLoading)return <div className="auth-screen"><div className="auth-card"><div className="auth-brand">ARC <span>AI</span><small>NOTES</small></div><div className="auth-loading">Restoring your secure session…</div></div></div>;
+ if(!authUser)return <div className="auth-screen"><div className="auth-card"><div className="auth-brand">ARC <span>AI</span><small>NOTES</small></div><div className="auth-eyebrow">YOUR PERSONAL KNOWLEDGE SPACE</div><h1>{authMode==="login"?"Welcome back":"Create your account"}</h1><p className="auth-subtitle">{authMode==="login"?"Sign in to continue to your notes and AI study room.":"Create an account to securely save and access your notes."}</p><form className="auth-form" onSubmit={handleAuthSubmit}><label>Email address<span className="auth-input-wrap"><Mail size={17}/><input type="email" autoComplete="email" required value={authEmail} onChange={e=>setAuthEmail(e.target.value)} placeholder="you@example.com"/></span></label><label>Password<span className="auth-input-wrap"><LockKeyhole size={17}/><input type="password" autoComplete={authMode==="login"?"current-password":"new-password"} minLength={6} required value={authPassword} onChange={e=>setAuthPassword(e.target.value)} placeholder="At least 6 characters"/></span></label>{authError&&<div className="auth-error">{authError}</div>}<button className="auth-submit" type="submit" disabled={authBusy}>{authBusy?"Please wait…":authMode==="login"?"Sign in":"Create account"} {authMode==="login"?<LogIn size={17}/>:<UserPlus size={17}/>}</button></form><div className="auth-switch">{authMode==="login"?"New to ARC AI?":"Already have an account?"} <button type="button" onClick={()=>{setAuthMode(authMode==="login"?"signup":"login");setAuthError("");}}>{authMode==="login"?"Create account":"Sign in"}</button></div>{authMode==="login"&&<button className="auth-reset" type="button" onClick={()=>void sendPasswordReset()}>Forgot password?</button>}<div className="auth-footnote">Your account is secured by Firebase Authentication.</div></div></div>;
  return <div className="app-shell">
  <aside className={`sidebar ${mobileNav?"sidebar-open":""}`}>
   <div className="brand-row"><div className="brand-mark" aria-hidden="true"><svg viewBox="0 0 48 48" role="img"><defs><linearGradient id="arcNoteGradient" x1="5" y1="4" x2="43" y2="44" gradientUnits="userSpaceOnUse"><stop stopColor="#B9A7FF"/><stop offset="1" stopColor="#7355E8"/></linearGradient></defs><rect x="5" y="4" width="31" height="39" rx="7" fill="url(#arcNoteGradient)"/><path d="M27 4v10a4 4 0 0 0 4 4h5" fill="#EDE8FF" opacity=".9"/><path d="M12 22h16M12 28h13M12 34h9" stroke="#fff" strokeWidth="2.4" strokeLinecap="round"/><path d="m37 25 1.8 4.2L43 31l-4.2 1.8L37 37l-1.8-4.2L31 31l4.2-1.8L37 25Z" fill="#E9E1FF" stroke="#7355E8" strokeWidth=".8"/></svg></div><span className="brand-name">ARC <span>AI</span><small>NOTES</small></span><button className="icon-button mobile-close" onClick={()=>setMobileNav(false)}><X size={18}/></button></div>
-  <button className="workspace-switch"><div className="workspace-avatar">R</div><span><strong>My workspace</strong><small>Personal workspace · Supabase cloud</small></span><ChevronDown size={15}/></button>
+  <div className="signed-in-card"><span className="signed-in-avatar">{(authUser?.email||"A").charAt(0).toUpperCase()}</span><span><strong>{authUser?.email}</strong><small>Signed in</small></span><button title="Sign out" aria-label="Sign out" onClick={signOut}>Sign out</button></div><button className="workspace-switch"><div className="workspace-avatar">R</div><span><strong>My workspace</strong><small>Personal workspace · Supabase cloud</small></span><ChevronDown size={15}/></button>
   <button className="new-note-button" onClick={createNote}><Plus size={17}/> Create new note <span>⌘ N</span></button>
   <div className="nav-caption">WORKSPACE</div><nav className="main-nav">{navItems.map(({label,icon:Icon})=><button key={label} className={`nav-item ${active===label?"active":""}`} onClick={()=>{setActive(label);setSelected(null);setMobileNav(false)}}><Icon size={17}/><span>{label}</span>{label==="AI Study Room"&&<span className="nav-new">BETA</span>}</button>)}</nav>
   <div className="nav-caption collections-caption">YOUR COLLECTIONS <button aria-label="Add collection"><Plus size={14}/></button></div>
